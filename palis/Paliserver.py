@@ -3,6 +3,7 @@
 # Pars Ain't Robust Server
 # Parc Ain't Robust Client
 from flask import session, escape, request, redirect, url_for
+from flask.templating import render_template
 from palis import app
 
 
@@ -13,10 +14,9 @@ def index():
     if 'username' in session:
         app.logger.info('user %s logged in' % session['username'])
 
-        return 'Logged in as %s%s' % (escape(session['username']), (' by %s' % state['agent']) if state['agent'] else '')
-    # abort(401)
-    return 'You are not logged in'
-
+        return render_template('index.html', name=session['username'])
+        # return 'Logged in as %s%s' % (escape(session['username']), (' by %s' % state['agent']) if state['agent'] else '')
+    return render_template('index.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
