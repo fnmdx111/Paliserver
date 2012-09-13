@@ -6,11 +6,12 @@ app = Flask(__name__)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
 
-
 app.debug = True
 
 
 db = SQLAlchemy(app)
+
+db.create_all()
 
 Bootstrap(app)
 

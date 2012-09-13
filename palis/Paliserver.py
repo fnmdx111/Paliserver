@@ -2,9 +2,11 @@
 
 # Pars Ain't Robust Server
 # Parc Ain't Robust Client
-from flask import session, escape, request, redirect, url_for
+from flask import session, escape, request, redirect, url_for, flash
 from flask.templating import render_template
 from palis import app
+from palis.forms import LoginForm
+from palis.models import User
 
 
 state = {'agent': ''}
@@ -18,25 +20,36 @@ def index():
         # return 'Logged in as %s%s' % (escape(session['username']), (' by %s' % state['agent']) if state['agent'] else '')
     return render_template('index.html')
 
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        session['username'] = request.form['username']
+        logout()
+
+        username, password = request.form['username'], request.form['password']
+
+        if not username in map(lambda user: user.username, User.query.all()):
+            return render_template('login.html', username_side_msg='user %s not found' % username, form=LoginForm())
+        if not password == User.query.filter_by(username=username).first().password:
+            return render_template('login.html', password_side_msg='password does not match', form=LoginForm())
+
+        session['username'] = username
         if 'Palient/0.0.a' in request.user_agent.string:
             state['agent'] = 'palient'
-            return redirect(url_for('index'))
         else:
             state['agent'] = request.user_agent.browser
-            return redirect(url_for('index'))
-    return '''
-        <form action="" method="post">
-            <p><input type="text" name="username" /></p>
-            <p><input type="submit" value="Login" /></p>
-        </form>
-    '''
+
+        flash('you were successfully logged in')
+        return redirect(url_for('index'))
+
+    return render_template('login.html', form=LoginForm())
+
 
 @app.route('/logout')
 def logout():
+    if not session.get('username', None):
+        return redirect(url_for('index'))
+
     app.logger.info('user %s logged out' % session['username'])
 
     session.pop('username', None)
