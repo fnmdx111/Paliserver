@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block body_content %}
+    {{ super() }}
+
+    <form class="form form-horizontal" method="post">
+        {{ form.hidden_tag() }}
+        {{ wtf.form_errors(form, "only") }}
+        {{ wtf.horizontal_field(form.username) }} <span class="help-inline text-error">{{ username_side_msg }}</span>
+        {{ wtf.horizontal_field(form.password) }} <span class="help-inline text-error">{{ password_side_msg }}</span>
+
+        <div class="form-actions">
+            <button name="action_save" type="submit" class="btn btn-primary">Login</button>
+        </div>
+    </form>
+{% endblock %}
+
+
