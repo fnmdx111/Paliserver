@@ -13,8 +13,14 @@ Dependencies
 
 * flask-bootstrap
 
+* flask-wtf
+
 Log
 ---
+
+*   2012/9/14T0110 - under dev
+
+    imported flask-wtf
 
 *   2012/9/13T1008 - under dev
 
