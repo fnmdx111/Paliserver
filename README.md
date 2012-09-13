@@ -11,11 +11,16 @@ Dependencies
 
 * flask-sqlalchemy
 
+* flask-bootstrap
 
 Log
 ---
 
-*   2012/9/12T0:45 - under developing
+*   2012/9/13T1008 - under dev
+
+    imported flask-bootstrap
+
+*   2012/9/12T0045 - under dev
 
     first push
 
