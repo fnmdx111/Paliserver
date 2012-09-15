@@ -23,6 +23,19 @@ class User(db.Model):
 
 
 class PaperDispatchEntity(db.Model):
+    STATUS_STR = {
+        0x0: 'n/a',
+        0x1: 'Not Started',
+        0x2: 'Reading',
+        0x3: 'Already Read'
+    }
+    STATUS_CLASS = {
+        0x0: '',
+        0x1: 'info',
+        0x2: 'warning',
+        0x3: 'success'
+    }
+
     __tablename__ = 'pde'
 
     _id = db.Column(db.Integer, primary_key=True)
@@ -52,11 +65,17 @@ class PaperDispatchEntity(db.Model):
         self.paper_id = paper_id
 
         self.status = status
+
         self.dispatch_date = dispatch_date
 
 
+    def force_status_str(self):
+        self.status_str = PaperDispatchEntity.STATUS_STR[self.status]
+        self.status_class = PaperDispatchEntity.STATUS_CLASS[self.status]
+
+
     def __repr__(self):
-        return '''<PDE('%s, '%s', '%s', '%s', '%s')>''' % (self.from_uid,
+        return '''<PDE('%s', '%s', '%s', '%s', '%s')>''' % (self.from_uid,
                                                            self.to_uid,
                                                            self.paper_id,
                                                            self.status,
