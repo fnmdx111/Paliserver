@@ -4,11 +4,13 @@
 {% block body_content %}
     {{ super() }}
 
+    <div>
     {% if name %}
-      <p class="text-info">Hello {{ name }}</p>
+      <p class="text-success">Hello {{ name }}.</p>
     {% else %}
       <h1>Hello world!</h1>
     {% endif %}
+    </div>
 {% endblock %}
 
 
