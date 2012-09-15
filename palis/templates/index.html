@@ -4,13 +4,14 @@
 {% block body_content %}
     {{ super() }}
 
-    <div>
+    <div class="container">
+        <div>
     {% if name %}
-      <p class="text-success">Hello {{ name }}.</p>
+      <div class="hero-unit"><p class="">Hello {{ name }}.</p></div>
     {% else %}
-      <h1>Hello world!</h1>
+      <div class="hero-unit"><p class="">Hello world!</p></div>
     {% endif %}
-    </div>
+    </div></div>
 {% endblock %}
 
 

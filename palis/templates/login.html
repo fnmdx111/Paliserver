@@ -9,8 +9,10 @@
 {% block body_content %}
     {{ super() }}
 
-    <div>
-    <p>{{ banner_message }}</p>
+    <div class="container">
+        <div class="hero-unit">
+            <p class="">{{ banner_message }}</p>
+        </div>
 
     {% if form %}
     <form class="form form-horizontal" method="post">
