@@ -28,7 +28,7 @@ def login():
 
     if 'username' in session and request.method != 'POST':
         return render_template('login.html',
-                               banner_message='%s has already logged in' % session['username'],
+                               banner_message='User %s has already logged in.' % session['username'],
                                form=form,
                                username=session['username'])
 
@@ -52,7 +52,9 @@ def login():
             flash('you were successfully logged in')
             return redirect(url_for('show_list'))
 
-    return render_template('login.html', form=form)
+    return render_template('login.html',
+                           banner_message='Login for simple paper list service.',
+                           form=form)
 
 
 @app.route('/user')
