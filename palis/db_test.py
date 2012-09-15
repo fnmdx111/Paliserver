@@ -1,3 +1,4 @@
+# encoding: utf-8
 from datetime import date
 from sqlalchemy.exc import IntegrityError
 from palis import db
@@ -7,9 +8,9 @@ from palis.models import User, Paper, PaperDispatchEntity
 if True:
     db.create_all()
 
-    admin = User('admin', '123456')
-    johann = User('johann', 'wolfgang')
-    goethe = User('goethe', 'vonvon')
+    admin = User(u'admin', u'123456')
+    johann = User(u'johann', u'wolfgang')
+    goethe = User(u'goethe', u'von von')
 
     try:
         db.session.add(goethe)
@@ -20,9 +21,10 @@ if True:
         print err
         db.session.rollback()
 
-    paper1 = Paper('author1', 'title1', 'author1-title1.pdf', date(2012, 6, 2))
-    paper2 = Paper('author1', 'title2', 'author1-title2.pdf', date(2012, 6, 2))
-    paper3 = Paper('author2', 'title3', 'author2-title3.pdf', date(2012, 6, 5))
+    paper1 = Paper(u'张章', u'哈哈', u'zhang_zhang_ha-ha.pdf', date(2012, 6, 2))
+    paper2 = Paper(u'李丽', u'哼哼', u'li_li_heng-heng.pdf', date(2012, 6, 2))
+    paper3 = Paper(u'Andrew S. Tanenbaum', u'Modern Operating Systems',
+                   u'andrew_s_tanenbaum_Modern-Operating-Systems.pdf', date(2012, 6, 5))
 
     try:
         db.session.add(paper1)
@@ -33,14 +35,26 @@ if True:
         print err
         db.session.rollback()
 
-    pde1 = PaperDispatchEntity(1, 2, 1, 0x0, date(2012, 6, 12))
-    pde2 = PaperDispatchEntity(1, 3, 1, 0x0, date(2012, 6, 12))
-    pde3 = PaperDispatchEntity(3, 1, 2, 0x0, date(2012, 6, 15))
+    print admin._id, johann._id, goethe._id
+
+    pde1 = PaperDispatchEntity(admin._id, johann._id, paper1._id, 0x1, date(2012, 6, 12))
+    pde2 = PaperDispatchEntity(admin._id, goethe._id, paper1._id, 0x1, date(2012, 6, 12))
+    pde3 = PaperDispatchEntity(admin._id, johann._id, paper2._id, 0x1, date(2012, 6, 15))
+    pde4 = PaperDispatchEntity(admin._id, goethe._id, paper2._id, 0x1, date(2012, 6, 15))
+    pde5 = PaperDispatchEntity(goethe._id, johann._id, paper3._id, 0x1, date(2012, 6, 17))
+
+    print pde1
+    print pde2
+    print pde3
+    print pde4
+    print pde5
 
     try:
         db.session.add(pde1)
         db.session.add(pde2)
         db.session.add(pde3)
+        db.session.add(pde4)
+        db.session.add(pde5)
         db.session.commit()
     except IntegrityError as err:
         print err
