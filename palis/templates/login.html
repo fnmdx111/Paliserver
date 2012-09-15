@@ -1,18 +1,30 @@
 {% extends "base.html" %}
 
+{% if username %}
+    {% block block_username %}
+        {{ username }}
+    {% endblock %}
+{% endif %}
+
 {% block body_content %}
     {{ super() }}
 
+    <div>
+    <p>{{ banner_message }}</p>
+
+    {% if form %}
     <form class="form form-horizontal" method="post">
         {{ form.hidden_tag() }}
         {{ wtf.form_errors(form, "only") }}
-        {{ wtf.horizontal_field(form.username) }} <span class="help-inline text-error">{{ username_side_msg }}</span>
-        {{ wtf.horizontal_field(form.password) }} <span class="help-inline text-error">{{ password_side_msg }}</span>
+        {{ wtf.horizontal_field(form.username) }}
+        {{ wtf.horizontal_field(form.password) }}
 
         <div class="form-actions">
-            <button name="action_save" type="submit" class="btn btn-primary">Login</button>
+            <button name="action_save" type="submit" class="btn btn-primary btn-large">Login</button>
         </div>
     </form>
+    {% endif %}
+    </div>
 {% endblock %}
 
 
