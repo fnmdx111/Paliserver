@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% macro make_operation(pde_id, url_pfx, text, btn_class='') -%}
+    <form id="{{ url_pfx }}-{{ pde_id }}" action="{{ url_pfx }}" method="post" style="display: inline;">
+        <input type="hidden" name="pde_id" value="{{ pde_id }}"/>
+        <a onclick="document.getElementById('{{ url_pfx }}-{{ pde_id }}').submit();"
+           class="btn {{ btn_class }} btn-small">{{ text }}</a>
+    </form>
+{%- endmacro %}
+
+{% macro make_avl_operations(pde_id, operations) -%}
+    {% for url_pfx, text, btn_cls in operations %}
+        {{ make_operation(pde_id, url_pfx, text, btn_cls) }}
+    {% endfor %}
+{%- endmacro %}
+
+{% macro make_label(status_class, status_str) -%}
+    {% if status_class %}
+        {% set span_cls = ('label', status_class)|join('-') %}
+    {% else %}
+        {% set span_cls = '' %}
+    {% endif %}
+    <span class="label {{ span_cls }}">{{ status_str }}</span>
+{%- endmacro %}
+
+{% macro make_thead(from_or_to) -%}
+    <thead><tr>
+        <th>Title</th>
+        <th>Author</th>
+        <th>Status</th>
+        <th>{{ from_or_to }}</th>
+        <th>Date</th>
+        <th>Available Operations</th>
+    </tr></thead>
+{%- endmacro %}
+
+{% macro make_pde_trivial(pd_entity, username) -%}
+    <td>{{ pd_entity.paper.title }}</td>
+    <td>{{ pd_entity.paper.author }}</td>
+    <td>{{ make_label(pd_entity.status_class,
+                      pd_entity.status_str) }}</td>
+    <td>{{ username }}</td>
+    <td>{{ pd_entity.dispatch_date }}</td>
+{%- endmacro %}
+
+{% block body_content %}
+    {{ super() }}
+
+    {% if pd_entities_to %}
+    <div><h3>Papers that are forwarded to you</h3>
+        <table class="table table-hover">
+            {{ make_thead('From') }}
+            <tbody>
+                {% for pd_entity in pd_entities_to %}
+                    <tr>
+                        {{ make_pde_trivial(pd_entity,
+                                            pd_entity.from_user.username) }}
+                        <td>
+                            {% if pd_entity.status_str == 'Not Started' %}
+                                {{ make_operation(pd_entity._id, 'read', 'Read it now', 'btn-warning') }}
+                            {% elif pd_entity.status_str == 'Reading' %}
+                                {{ make_operation(pd_entity._id, 'read', 'Mark as finished', 'btn-success') }}
+                            {% endif %}
+                            {{ make_avl_operations(pd_entity._id,
+                                                   [('forward', 'Forward to', ''),
+                                                    ('download', 'Download', '')]) }}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    {% if pd_entities_from %}
+    <div><h3>Papers that you forward to others</h3>
+        <table class="table table-hover">
+            {{ make_thead('To') }}
+            <tbody>
+            {% for pd_entity in pd_entities_from %}
+                <tr>
+                    {{ make_pde_trivial(pd_entity,
+                                        pd_entity.to_user.username) }}
+                    <td>
+                        {{ make_avl_operations(pd_entity._id,
+                                               [('withdraw', 'Withdraw', 'btn-danger'),
+                                                ('hasten', 'Hasten this dispatch', '')]) }}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+{% endblock %}
