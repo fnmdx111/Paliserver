@@ -18,6 +18,10 @@ Dependencies
 Log
 ---
 
+*   2012/9/15T1622 - under dev
+
+    introduces paper-list, read buttons and dispatch-withdrawal
+
 *   2012/9/14T0110 - under dev
 
     imported flask-wtf
@@ -30,3 +34,7 @@ Log
 
     first push
 
+
+licensed under lgpl
+
+author: <mailto:chsc4698@gmail.com>
