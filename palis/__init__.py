@@ -8,10 +8,15 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
 
 app.debug = True
 
-
 db = SQLAlchemy(app)
 
 db.create_all()
+
+
+@app.teardown_request
+def shutdown_session(exception=None):
+    db.session.remove()
+
 
 Bootstrap(app)
 
