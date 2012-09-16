@@ -1,22 +1,5 @@
 {% extends "base.html" %}
 
-{% macro make_operation(pde_id, url_pfx, text, btn_class='', addition_input=[]) -%}
-    <form id="{{ url_pfx }}-{{ pde_id }}" action="{{ url_pfx }}" method="post" style="display: inline;">
-        <input type="hidden" name="pde_id" value="{{ pde_id }}"/>
-        {% for ipt_name, ipt_value in addition_input %}
-            <input type="hidden" name="{{ ipt_name }}" value="{{ ipt_value }}"/>
-        {% endfor %}
-        <button onclick="document.getElementById('{{ url_pfx }}-{{ pde_id }}').submit();"
-           class="btn {{ btn_class }} btn-small">{{ text }}</button>
-    </form>
-{%- endmacro %}
-
-{% macro make_avl_operations(pde_id, operations) -%}
-    {% for url_pfx, text, btn_cls, addition_input in operations %}
-        {{ make_operation(pde_id, url_pfx, text, btn_cls, addition_input) }}
-    {% endfor %}
-{%- endmacro %}
-
 {% macro make_label(status_class, status_str) -%}
     {% if status_class %}
         {% set span_cls = ('label', status_class)|join('-') %}
@@ -60,9 +43,21 @@
     {{ make_active_class(not pd_entities_to and pd_entities_from) }}
 {%- endmacro  %}
 
-{% block body_content %}
+{% macro make_button(text, action, btn_class, _id, additional_fields=[]) -%}
+    <button type="button" class="btn btn-small {{ btn_class }}"
+            onclick="proceed({{ _id }}, '{{ url_for(action) }}', {{ additional_fields }});">
+        {{ text }}
+    </button>
+{%- endmacro %}
+
+
+{% block head_content %}
     {{ super() }}
 
+{% endblock %}
+
+{% block body_content %}
+    {{ super() }}
     <div class="container">
         <ul class="nav nav-tabs" id="tabs">
             <li class="{{ make_tab_active_to() }}">
@@ -96,20 +91,25 @@
                                                     {% set read_btn_text = '' %}
                                                     {% set read_btn_class = '' %}
                                                 {% endif %}
-                                                {% set operations = [('download', 'Download', '', []),
-                                                                     ] %}
-                                                {% if read_btn_text %}
-                                                    {% set operations = [('read', read_btn_text, read_btn_class, [])]
-                                                                        + [('withdraw', 'Refuse',
-                                                                            'btn-danger', [('status', 'refuse')])]
-                                                                        + operations %}
-                                                {% endif %}
                                                 <div class="pull-right">
-                                                    {{ make_avl_operations(pd_entity._id, operations) }}
-                                                    <a href="#modal_forward" role="button" class="btn btn-small"
-                                                       data-toggle="modal">
-                                                        Forward to
-                                                    </a>
+                                                    <div class="btn-group">
+                                                        {% if read_btn_text %}
+                                                        {{ make_button(read_btn_text, 'read_paper',
+                                                                       read_btn_class, pd_entity._id) }}
+                                                        {% endif %}
+                                                        {{ make_button('Download', 'download_paper',
+                                                                       '', pd_entity._id) }}
+                                                        <button type="button" href="#forward-dialog"
+                                                                role="button" class="btn btn-small"
+                                                                data-toggle="modal">
+                                                            Forward to
+                                                        </button>
+                                                        {{ make_button('Refuse', 'withdraw_dispatch',
+                                                                       'btn-danger', pd_entity._id,
+                                                                       {'status': 'refuse'}) }}
+                                                    </div>
+                                                    {% import "modals.html" as modals %}
+                                                    {{ modals.make_forward_dialog(forward_form, pd_entity._id) }}
                                                 </div>
                                             </td>
                                         </tr>
@@ -141,15 +141,16 @@
                                 {{ make_pde_trivial(pd_entity,
                                                     pd_entity.to_user.username) }}
                                 <td>
-                                    {% if tr_class %}
-                                        {% set buttons = [('redispatch', 'Redispatch', 'btn-info', [])] %}
-                                    {% else %}
-                                        {% set buttons = [('withdraw', 'Withdraw', 'btn-danger',
-                                                           [('status', 'withdraw')]),
-                                                          ('hasten', 'Hasten this dispatch', '', [])] %}
-                                    {% endif %}
-                                    <div class="pull-right">
-                                        {{ make_avl_operations(pd_entity._id, buttons) }}
+                                    <div class="pull-right btn-group">
+                                        {% if tr_class %}
+                                            {% set buttons = [('redispatch', 'Redispatch', 'btn-info', [])] %}
+                                            {{ make_button('Redispatch', 'redispatch', 'btn-info', pd_entity._id) }}
+                                        {% else %}
+                                            {{ make_button('Hasten this dispatch', 'redispatch',
+                                                           '', pd_entity._id) }}
+                                            {{ make_button('Withdraw', 'withdraw_dispatch', 'btn-danger', pd_entity._id,
+                                                           "{'status': 'withdraw'}") }}
+                                        {% endif %}
                                     </div>
                                 </td>
                             </tr>
@@ -165,11 +166,57 @@
             </div>
         </div>
     </div>
+{% endblock %}
+
+{% block bootstrap_js_bottom %}
+    {{ super() }}
+
     <script type="text/javascript">
         $('#tabs').find('a').click(function (e) {
             e.preventDefault();
             $(this).tab('show');
             $(this).find('i').addClass('icon-white');
         });
+
+        $('a.checkbox-anchor').click(function (e) {
+            var checkbox = $('#' + $(this).attr('id').substring(1));
+            var i = $('#i' + $(this).attr('id').substring(1));
+
+            checkbox.attr('checked', !checkbox.attr('checked'));
+            if (checkbox.attr('checked')) {
+                i.removeClass('icon-remove-sign');
+                i.addClass('icon-ok-sign');
+            } else {
+                i.removeClass('icon-ok-sign');
+                i.addClass('icon-remove-sign');
+            }
+        });
+
+        var proceed = function (_id, action, additional_fields) {
+            var form = document.createElement('form');
+            form.setAttribute('method', 'post');
+            form.setAttribute('action', action);
+            form.style.display = 'hidden';
+            document.body.appendChild(form);
+
+            var create_field = function (name, value) {
+                var _f = document.createElement('input');
+                _f.setAttribute('type', 'hidden');
+                _f.setAttribute('name', name);
+                _f.setAttribute('value', value);
+                form.appendChild(_f);
+            };
+
+            create_field('pde_id', _id);
+
+            for (var field in additional_fields) {
+                console.log(field);
+                create_field(field, additional_fields[field]);
+            }
+
+            form.submit();
+        }
     </script>
 {% endblock %}
+
+
