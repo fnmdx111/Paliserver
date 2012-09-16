@@ -11,11 +11,15 @@ if True:
     admin = User(u'admin', u'123456')
     johann = User(u'johann', u'wolfgang')
     goethe = User(u'goethe', u'von von')
+    shell = User(u'shell', u'123456')
+    tty = User(u'tty', u'123456')
 
     try:
         db.session.add(goethe)
         db.session.add(admin)
         db.session.add(johann)
+        db.session.add(tty)
+        db.session.add(shell)
         db.session.commit()
     except IntegrityError as err:
         print err
