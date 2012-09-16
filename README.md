@@ -20,7 +20,7 @@ Log
 
 *   2012/9/17T0203 - under dev
 
-    introduced forward-to, btn-group integration, redispatch and so on
+    introduced forward-to, `.btn-group` integration, redispatch and so on
 
 *   2012/9/15T1622 - under dev
 
