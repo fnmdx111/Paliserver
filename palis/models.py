@@ -44,6 +44,8 @@ class PaperDispatchEntity(db.Model):
     from_uid = db.Column(db.Integer, db.ForeignKey('user._id'))
     paper_id = db.Column(db.Integer, db.ForeignKey('paper._id'))
 
+    forward_status = db.Column(db.Integer) # 0x0 pending 0x1 refused
+
     status = db.Column(db.Integer) # 0x0 n/a 0x1 not reading 0x2 reading 0x3 read
     dispatch_date = db.Column(db.Date)
 

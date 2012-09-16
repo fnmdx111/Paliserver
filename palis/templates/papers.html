@@ -1,18 +1,20 @@
 {% extends "base.html" %}
 
-{% macro make_operation(pde_id, url_pfx, text, btn_class='') -%}
+{% macro make_operation(pde_id, url_pfx, text, btn_class='', addition_input=[]) -%}
     <form id="{{ url_pfx }}-{{ pde_id }}" action="{{ url_pfx }}" method="post" style="display: inline;">
         <input type="hidden" name="pde_id" value="{{ pde_id }}"/>
+        {% for ipt_name, ipt_value in addition_input %}
+            <input type="hidden" name="{{ ipt_name }}" value="{{ ipt_value }}"/>
+        {% endfor %}
         <button onclick="document.getElementById('{{ url_pfx }}-{{ pde_id }}').submit();"
            class="btn {{ btn_class }} btn-small">{{ text }}</button>
     </form>
 {%- endmacro %}
 
 {% macro make_avl_operations(pde_id, operations) -%}
-    <div class="pull-right">
-    {% for url_pfx, text, btn_cls in operations %}
-        {{ make_operation(pde_id, url_pfx, text, btn_cls) }}
-    {% endfor %}</div>
+    {% for url_pfx, text, btn_cls, addition_input in operations %}
+        {{ make_operation(pde_id, url_pfx, text, btn_cls, addition_input) }}
+    {% endfor %}
 {%- endmacro %}
 
 {% macro make_label(status_class, status_str) -%}
@@ -44,49 +46,74 @@
     <td>{{ username }}</td>
 {%- endmacro %}
 
+{% macro make_active_class(should_active) -%}
+    {% if should_active %}
+        active
+    {% endif %}
+{%- endmacro %}
+
+{% macro make_tab_active_to() -%}
+    {{ make_active_class(pd_entities_to) }}
+{%- endmacro  %}
+
+{% macro make_tab_active_from() -%}
+    {{ make_active_class(not pd_entities_to and pd_entities_from) }}
+{%- endmacro  %}
+
 {% block body_content %}
     {{ super() }}
 
     <div class="container">
         <ul class="nav nav-tabs" id="tabs">
-            <li class="active"><a href="#received" data-toggle="tab"><i class="icon-inbox"></i> Received</a></li>
-            <li><a href="#forwarded" data-toggle="tab"><i class="icon-share"></i> Forwarded</a></li>
+            <li class="{{ make_tab_active_to() }}">
+                <a href="#received" data-toggle="tab"><i class="icon-inbox"></i> Received</a>
+            </li>
+            <li class="{{ make_tab_active_from() }}">
+                <a href="#forwarded" data-toggle="tab"><i class="icon-share"></i> Forwarded</a>
+            </li>
         </ul>
 
         <div class="tab-content">
-            <div class="tab-pane active" id="received">
+            <div class="tab-pane {{ make_tab_active_to() }}" id="received">
                 {% if pd_entities_to %}
                     <div class="container"><h3>Papers that are forwarded to you</h3>
                         <table class="table table-hover">
                             {{ make_thead('From') }}
                             <tbody>
                                 {% for pd_entity in pd_entities_to %}
-                                    <tr>
-                                        {{ make_pde_trivial(pd_entity,
-                                                            pd_entity.from_user.username) }}
-                                        <td>
-                                            {% if pd_entity.status_str == 'Not Started' %}
-                                                {% set read_btn_text = 'Read it now' %}
-                                                {% set read_btn_class = 'btn-warning' %}
-                                            {% elif pd_entity.status_str == 'Reading' %}
-                                                {% set read_btn_text = 'Mark as finished' %}
-                                                {% set read_btn_class = 'btn-success' %}
-                                            {% else %}
-                                                {% set read_btn_text = '' %}
-                                                {% set read_btn_class = '' %}
-                                            {% endif %}
-                                            {% set operations = [('download', 'Download', ''),
-                                                                 ('forward', 'Forward to', ''),
-                                                                 ] %}
-                                            {% if read_btn_text %}
-                                                {% set operations = [('read', read_btn_text, read_btn_class)]
-                                                                    + operations
-                                                                    + [('withdraw', 'Refuse', 'btn-danger')]%}
-                                            {% endif %}
-                                            {{ make_avl_operations(pd_entity._id,
-                                                                   operations) }}
-                                        </td>
-                                    </tr>
+                                    {% if not pd_entity.forward_status %}
+                                        <tr>
+                                            {{ make_pde_trivial(pd_entity,
+                                                                pd_entity.from_user.username) }}
+                                            <td>
+                                                {% if pd_entity.status_str == 'Not Started' %}
+                                                    {% set read_btn_text = 'Mark as reading' %}
+                                                    {% set read_btn_class = 'btn-warning' %}
+                                                {% elif pd_entity.status_str == 'Reading' %}
+                                                    {% set read_btn_text = 'Mark as finished' %}
+                                                    {% set read_btn_class = 'btn-success' %}
+                                                {% else %}
+                                                    {% set read_btn_text = '' %}
+                                                    {% set read_btn_class = '' %}
+                                                {% endif %}
+                                                {% set operations = [('download', 'Download', '', []),
+                                                                     ] %}
+                                                {% if read_btn_text %}
+                                                    {% set operations = [('read', read_btn_text, read_btn_class, [])]
+                                                                        + [('withdraw', 'Refuse',
+                                                                            'btn-danger', [('status', 'refuse')])]
+                                                                        + operations %}
+                                                {% endif %}
+                                                <div class="pull-right">
+                                                    {{ make_avl_operations(pd_entity._id, operations) }}
+                                                    <a href="#modal_forward" role="button" class="btn btn-small"
+                                                       data-toggle="modal">
+                                                        Forward to
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endif %}
                                 {% endfor %}
                             </tbody>
                         </table>
@@ -98,20 +125,32 @@
                 {% endif %}
             </div>
 
-            <div class="tab-pane" id="forwarded">
+            <div class="tab-pane {{ make_tab_active_from() }}" id="forwarded">
                 {% if pd_entities_from %}
                 <div class="container"><h3>Papers that you forward to others</h3>
                     <table class="table table-hover">
                         {{ make_thead('To') }}
                         <tbody>
                         {% for pd_entity in pd_entities_from %}
-                            <tr>
+                            {% if pd_entity.forward_status %}
+                                {% set tr_class = 'error' %}
+                            {% else %}
+                                {% set tr_class = '' %}
+                            {% endif %}
+                            <tr class="{{ tr_class }}">
                                 {{ make_pde_trivial(pd_entity,
                                                     pd_entity.to_user.username) }}
                                 <td>
-                                    {{ make_avl_operations(pd_entity._id,
-                                                           [('withdraw', 'Withdraw', 'btn-danger'),
-                                                            ('hasten', 'Hasten this dispatch', '')]) }}
+                                    {% if tr_class %}
+                                        {% set buttons = [('redispatch', 'Redispatch', 'btn-info', [])] %}
+                                    {% else %}
+                                        {% set buttons = [('withdraw', 'Withdraw', 'btn-danger',
+                                                           [('status', 'withdraw')]),
+                                                          ('hasten', 'Hasten this dispatch', '', [])] %}
+                                    {% endif %}
+                                    <div class="pull-right">
+                                        {{ make_avl_operations(pd_entity._id, buttons) }}
+                                    </div>
                                 </td>
                             </tr>
                         {% endfor %}
@@ -130,6 +169,7 @@
         $('#tabs').find('a').click(function (e) {
             e.preventDefault();
             $(this).tab('show');
+            $(this).find('i').addClass('icon-white');
         });
     </script>
 {% endblock %}

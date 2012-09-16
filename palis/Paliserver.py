@@ -2,6 +2,7 @@
 
 # Pars Ain't Robust Server
 # Parc Ain't Robust Client
+from datetime import date
 from flask import session, request, redirect, url_for, flash
 from flask.templating import render_template
 import wtforms
@@ -99,7 +100,13 @@ def download_paper():
 @app.route('/withdraw', methods=['POST'])
 def withdraw_dispatch():
     pde_id = request.form['pde_id']
-    db.session.delete(PaperDispatchEntity.query.filter_by(_id=pde_id).first())
+    pde = PaperDispatchEntity.query.filter_by(_id=pde_id).first()
+
+    status = request.form['status']
+    if status == 'refuse':
+        pde.forward_status = 0x1
+    else:
+        db.session.delete(PaperDispatchEntity.query.filter_by(_id=pde_id).first())
 
     db.session.commit()
 
@@ -109,6 +116,18 @@ def withdraw_dispatch():
 @app.route('/hasten', methods=['POST'])
 def hasten_dispatch():
     pass
+
+
+@app.route('/redispatch', methods=['POST'])
+def redispatch():
+    pde = PaperDispatchEntity.query.filter_by(_id=request.form['pde_id']).first()
+    pde.status = 0x1
+    pde.forward_status = 0x0
+    pde.dispatch_date = date.today()
+
+    db.session.commit()
+
+    return redirect(url_for('show_list'))
 
 
 @app.route('/logout')
