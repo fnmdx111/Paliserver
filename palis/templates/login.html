@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 
-{% if username %}
+{% if cur_username %}
     {% block block_username %}
-        {{ username }}
+        {{ cur_username }}
     {% endblock %}
 {% endif %}
 

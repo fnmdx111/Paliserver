@@ -6,8 +6,8 @@
 
     <div class="container">
         <div>
-    {% if name %}
-      <div class="hero-unit"><p class="">Hello {{ name }}.</p></div>
+    {% if cur_username %}
+      <div class="hero-unit"><p class="">Hello {{ cur_username }}.</p></div>
     {% else %}
       <div class="hero-unit"><p class="">Hello world!</p></div>
     {% endif %}
