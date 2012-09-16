@@ -1,0 +1,33 @@
+{% import "bootstrap_wtf.html" as wtf %}
+
+
+{% macro make_forward_dialog(forward_form, pde_id) -%}
+    <div class="modal hide fade" id="forward-dialog" tabindex="-1" role="dialog" aria-labelledby="forward-dialog-label"
+         aria-hidden="true">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+            <h3 id="forward-dialog-label">Who shall be forwarded to...</h3>
+        </div>
+        <div class="modal-body">
+            <form action="{{ url_for('forward_paper') }}" id="forward-form" method="post">
+                <input type="hidden" name="pde_id" value="{{ pde_id }}" />
+                <input type="hidden" name="from_uid" value="{{ cur_uid }}" />
+                <ul class="nav nav-pills nav-stacked">
+                    {% for field in forward_form.users_selected %}
+                        {{ field(style="display: none;", class="hidden-checkbox " + field.id)|safe }}
+                        <li><a class="checkbox-anchor" id="a{{ field.id }}">
+                            <i class="indicator icon-remove-sign" id="i{{ field.id }}"></i>
+                            {{ field.label(class="checkbox pull-right", style="")|safe }}
+                        </a></li>
+                    {% endfor %}
+                </ul>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+            <button class="btn btn-primary" onclick="document.getElementById('forward-form').submit();">Forward</button>
+        </div>
+    </div>
+{%- endmacro %}
+
+
