@@ -10,7 +10,6 @@ from palis import app, db
 from palis.forms import LoginForm, ForwardForm
 from palis.models import User, PaperDispatchEntity
 
-
 state = {'agent': ''}
 
 
@@ -178,5 +177,5 @@ def logout():
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(host='0.0.0.0')
 

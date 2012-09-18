@@ -146,8 +146,10 @@
                                             {% set buttons = [('redispatch', 'Redispatch', 'btn-info', [])] %}
                                             {{ make_button('Redispatch', 'redispatch', 'btn-info', pd_entity._id) }}
                                         {% else %}
-                                            {{ make_button('Hasten this dispatch', 'redispatch',
-                                                           '', pd_entity._id) }}
+                                            {% if not pd_entity.status_str == 'Already Read' %}
+                                                {{ make_button('Hasten this dispatch', 'hasten_dispatch',
+                                                               '', pd_entity._id) }}
+                                            {% endif %}
                                             {{ make_button('Withdraw', 'withdraw_dispatch', 'btn-danger', pd_entity._id,
                                                            "{'status': 'withdraw'}") }}
                                         {% endif %}
