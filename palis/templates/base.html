@@ -18,12 +18,31 @@
                                                          {% endif %}</a>
                 <div class="nav-collapse collapse">
                     <ul class="nav">
-                        <li class="active"><a href="{{ url_for('show_list') }}"><i class="icon-home icon-white"></i> Home</a></li>
-                        <li><a href="{{ url_for('login') }}"><i class="icon-user icon-white"></i> Login</a></li>
-                        <li><a href="{{ url_for('logout') }}"><i class="icon-off icon-white"></i> Logout</a></li>
+                        <li class="active">
+                            <a href="{{ url_for('show_list') }}">
+                                <i class="icon-home icon-white"></i> Home
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('upload_paper') }}">
+                                <i class="icon-upload icon-white"></i> Upload
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('login') }}">
+                                <i class="icon-user icon-white"></i> Login
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('logout') }}">
+                                <i class="icon-off icon-white"></i> Logout
+                            </a>
+                        </li>
                     </ul>
                 </div><!--/.nav-collapse -->
             </div>
         </div>
     </div>
 {% endblock %}
+
+
