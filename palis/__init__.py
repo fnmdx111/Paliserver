@@ -1,5 +1,6 @@
 from flask import Flask
 from flask.ext.sqlalchemy import SQLAlchemy
+from flask.ext.uploads import UploadSet, DOCUMENTS, TEXT, configure_uploads
 from flask_bootstrap import Bootstrap
 
 app = Flask(__name__)
@@ -11,11 +12,15 @@ app.debug = True
 
 db = SQLAlchemy(app)
 
+Bootstrap(app)
+
+paper_uploader = UploadSet('papers', TEXT + DOCUMENTS + (u'pdf',),
+                           default_dest=lambda app: app.instance_path + r'\papers')
+configure_uploads(app, (paper_uploader,))
+
 
 @app.teardown_request
 def shutdown_session(exception=None):
     db.session.remove()
 
-
-Bootstrap(app)
 
