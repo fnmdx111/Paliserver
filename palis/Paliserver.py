@@ -3,12 +3,12 @@
 # Pars Ain't Robust Server
 # Parc Ain't Robust Client
 from datetime import date
-from flask import session, request, redirect, url_for, flash
+from flask import session, request, redirect, url_for, flash, jsonify
 from flask.templating import render_template
 import wtforms
-from palis import app, db
-from palis.forms import LoginForm, ForwardForm
-from palis.models import User, PaperDispatchEntity
+from palis import app, db, paper_uploader
+from palis.forms import LoginForm, ForwardForm, UploadForm
+from palis.models import User, PaperDispatchEntity, Paper
 
 state = {'agent': ''}
 
@@ -45,25 +45,16 @@ def login():
 
     if request.method == 'POST' and form.validate_on_submit():
         logout()
+        session['username'] = form.user.username
+        app.logger.info('user %s logged in' % session['username'])
 
-        username, password = form.username.data, form.password.data
-
-        user = User.query.filter_by(username=username).first()
-        if not user:
-            form.username.errors = [wtforms.ValidationError(u'user %s not found' % username)]
-        elif not user.password == password:
-            form.password.errors = [wtforms.ValidationError(u'password does not match')]
+        if 'Palient/0.0.a' in request.user_agent.string:
+            state['agent'] = 'palient'
         else:
-            session['username'] = username
-            app.logger.info('user %s logged in' % session['username'])
+            state['agent'] = request.user_agent.browser
 
-            if 'Palient/0.0.a' in request.user_agent.string:
-                state['agent'] = 'palient'
-            else:
-                state['agent'] = request.user_agent.browser
-
-            flash('you were successfully logged in')
-            return redirect(url_for('show_list'))
+        flash('you were successfully logged in')
+        return redirect(url_for('show_list'))
 
     return render_template('login.html',
                            banner_message='Login for simple paper list service.',
@@ -123,6 +114,39 @@ def forward_paper():
     db.session.commit()
 
     return redirect(url_for('show_list'))
+
+
+@app.route('/validate_paper', methods=['GET'])
+def validate_paper():
+    title = request.args.get('title', '', type=unicode)
+    author = request.args.get('author', '', type=unicode)
+
+    if not title or not author:
+        return jsonify(result='incomplete')
+    elif Paper.query.filter_by(title=title, author=author).first():
+        return jsonify(result='exist')
+    return jsonify(result='proceed')
+
+
+@app.route('/upload', methods=['GET', 'POST'])
+def upload_paper():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+
+    form = UploadForm(form=request.form)
+
+    if request.method == 'POST' and 'paper' in request.files:
+        filename = paper_uploader.save(request.files['paper'])
+
+        paper = Paper(form.author.data, form.title.data, filename, date.today())
+        db.session.add(paper)
+        db.session.commit()
+
+        flash('Paper uploaded successfully.')
+        return redirect(url_for('show_list'))
+
+    return render_template('upload.html', form=form)
+
 
 
 @app.route('/download', methods=['POST'])
