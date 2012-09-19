@@ -15,8 +15,15 @@ Dependencies
 
 * flask-wtf
 
+* flask-uploads
+
 Log
 ---
+
+*   2012/9/20T0215 - under dev
+
+    introduced basic and working upload, no progressbar is intended because i think LAN is fast enough,
+    to transfer files smaller than 50M
 
 *   2012/9/17T0203 - under dev
 
