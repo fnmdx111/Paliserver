@@ -153,7 +153,6 @@ def upload_paper():
     return render_template('upload.html', form=form)
 
 
-
 @app.route('/download', methods=['GET'])
 def download_paper():
     pde_id = request.args['pde_id']
