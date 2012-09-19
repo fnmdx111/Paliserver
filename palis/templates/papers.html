@@ -43,9 +43,9 @@
     {{ make_active_class(not pd_entities_to and pd_entities_from) }}
 {%- endmacro  %}
 
-{% macro make_button(text, action, btn_class, _id, additional_fields=[]) -%}
+{% macro make_button(text, action, btn_class, _id, additional_fields=[], method="'post'") -%}
     <button type="button" class="btn btn-small {{ btn_class }}"
-            onclick="proceed({{ _id }}, '{{ url_for(action) }}', {{ additional_fields }});">
+            onclick="proceed({{ _id }}, '{{ url_for(action) }}', {{ additional_fields }}, {{ method }});">
         {{ text }}
     </button>
 {%- endmacro %}
@@ -98,7 +98,7 @@
                                                                        read_btn_class, pd_entity._id) }}
                                                         {% endif %}
                                                         {{ make_button('Download', 'download_paper',
-                                                                       '', pd_entity._id) }}
+                                                                       '', pd_entity._id, [], "'get'") }}
                                                         <button type="button" href="#forward-dialog"
                                                                 role="button" class="btn btn-small"
                                                                 data-toggle="modal">
@@ -195,9 +195,9 @@
             }
         });
 
-        var proceed = function (_id, action, additional_fields) {
+        var proceed = function (_id, action, additional_fields, method) {
             var form = document.createElement('form');
-            form.setAttribute('method', 'post');
+            form.setAttribute('method', method);
             form.setAttribute('action', action);
             form.style.display = 'hidden';
             document.body.appendChild(form);
