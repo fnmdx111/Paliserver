@@ -14,6 +14,18 @@
             <button type="button" class="close" data-dismiss="alert">x</button>
             Incomplete form, please refill.
         </div>
+        {% if error %}
+            <div id="{{ custom_error }}" class="alert alert-error fade in" data-alert="alert">
+                <button type="button" class="close" data-dismiss="alert">x</button>
+                {{ error }}
+            </div>
+        {% endif %}
+        {% if success %}
+            <div id="{{ custom_success }}" class="alert alert-success fade in" data-alert="alert">
+                <button type="button" class="close" data-dismiss="alert">x</button>
+                {{ success }}
+            </div>
+        {% endif %}
         <form id="validate_paper" class="form form-horizontal"
               enctype="multipart/form-data"
               action="{{ url_for('upload_paper') }}" method="POST">
@@ -47,9 +59,9 @@
                 }, function (response) {
                     var resp = response['result'];
                     if (resp == 'incomplete') {
-                        $('#' + resp).show();
+                        $('#' + resp).fadeIn();
                     } else if (resp == 'exist') {
-                        $('#' + resp).show();
+                        $('#' + resp).fadeIn();
                     } else {
                         $('.form').submit();
                     }
