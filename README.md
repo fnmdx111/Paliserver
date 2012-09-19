@@ -20,6 +20,10 @@ Dependencies
 Log
 ---
 
+*   2012/9/20T0252 - under dev
+
+    introduced download
+
 *   2012/9/20T0215 - under dev
 
     introduced basic and working upload, no progressbar is intended because i think LAN is fast enough,
