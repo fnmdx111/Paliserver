@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+
+{% block body_content %}
+    {{ super() }}
+
+    <div class="container">
+        <h3>To upload a new paper, please first fill in this form</h3>
+        <div id="exist" class="alert alert-error fade in hide" data-alert="alert">
+            <button type="button" class="close" data-dismiss="alert">x</button>
+            This paper already exists.
+        </div>
+        <div id="incomplete" class="alert alert-error fade in hide" data-alert="alert">
+            <button type="button" class="close" data-dismiss="alert">x</button>
+            Incomplete form, please refill.
+        </div>
+        <form id="validate_paper" class="form form-horizontal"
+              enctype="multipart/form-data"
+              action="{{ url_for('upload_paper') }}" method="POST">
+            {{ form.hidden_tag() }}
+            {{ wtf.form_errors(form, "only") }}
+            {{ wtf.horizontal_field(form.title) }}
+            {{ wtf.horizontal_field(form.author) }}
+            {{ wtf.horizontal_field(form.paper) }}
+            <div class="form-actions">
+                <button id="go" name="action_save" type="submit" class="btn btn-primary btn-large">Submit</button>
+            </div>
+        </form>
+    </div>
+{% endblock %}
+
+{% block bootstrap_js_bottom %}
+    {{ super() }}
+
+    <script type="text/javascript">
+        $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+
+        $('.alert-error .close').live('click', function () {
+            $(this).parent().hide();
+        });
+
+        $(function () {
+            $('button#go').bind('click', function () {
+                $.getJSON($SCRIPT_ROOT + '/validate_paper', {
+                    author: $('input[name="author"]').val(),
+                    title: $('input[name="title"]').val()
+                }, function (response) {
+                    var resp = response['result'];
+                    if (resp == 'incomplete') {
+                        $('#' + resp).show();
+                    } else if (resp == 'exist') {
+                        $('#' + resp).show();
+                    } else {
+                        $('.form').submit();
+                    }
+                });
+                return false;
+            });
+        });
+    </script>
+{% endblock %}
+
