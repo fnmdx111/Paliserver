@@ -3,8 +3,10 @@
 # Pars Ain't Robust Server
 # Parc Ain't Robust Client
 from datetime import date
-from flask import session, request, redirect, url_for, flash, jsonify
+from flask import session, request, redirect, url_for, flash, jsonify, send_from_directory
+from flask.ext.uploads import UploadNotAllowed
 from flask.templating import render_template
+from sqlalchemy.exc import IntegrityError
 import wtforms
 from palis import app, db, paper_uploader
 from palis.forms import LoginForm, ForwardForm, UploadForm
@@ -136,22 +138,28 @@ def upload_paper():
     form = UploadForm(form=request.form)
 
     if request.method == 'POST' and 'paper' in request.files:
-        filename = paper_uploader.save(request.files['paper'])
+        try:
+            filename = paper_uploader.save(request.files['paper'])
+        except UploadNotAllowed:
+            return render_template('upload.html', error='Please select file to upload.', form=form)
 
         paper = Paper(form.author.data, form.title.data, filename, date.today())
         db.session.add(paper)
         db.session.commit()
 
         flash('Paper uploaded successfully.')
-        return redirect(url_for('show_list'))
+        return render_template('upload.html', success='Paper uploaded successfully.', form=UploadForm())
 
     return render_template('upload.html', form=form)
 
 
 
-@app.route('/download', methods=['POST'])
+@app.route('/download', methods=['GET'])
 def download_paper():
-    pass
+    pde_id = request.args['pde_id']
+    pde = PaperDispatchEntity.query.filter_by(_id=pde_id).first()
+
+    return send_from_directory(app.instance_path + r'\papers', pde.paper.filename, )
 
 
 @app.route('/withdraw', methods=['POST'])
