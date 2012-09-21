@@ -43,9 +43,9 @@
     {{ make_active_class(not pd_entities_to and pd_entities_from) }}
 {%- endmacro  %}
 
-{% macro make_button(text, action, btn_class, _id, additional_fields=[], method="'post'") -%}
+{% macro make_button(text, action, btn_class, _id, additional_fields=[], method="'post'", id_name="'pde_id'") -%}
     <button type="button" class="btn btn-small {{ btn_class }}"
-            onclick="proceed({{ _id }}, '{{ url_for(action) }}', {{ additional_fields }}, {{ method }});">
+            onclick="proceed({{ _id }}, '{{ url_for(action) }}', {{ additional_fields }}, {{ method }}, {{ id_name }});">
         {{ text }}
     </button>
 {%- endmacro %}
@@ -98,7 +98,8 @@
                                                                        read_btn_class, pd_entity._id) }}
                                                         {% endif %}
                                                         {{ make_button('Download', 'download_paper',
-                                                                       '', pd_entity._id, [], "'get'") }}
+                                                                       '', pd_entity.paper._id, [],
+                                                                       "'get'", "'paper_id'") }}
                                                         <button type="button" href="#forward-dialog"
                                                                 role="button" class="btn btn-small"
                                                                 data-toggle="modal">
@@ -195,7 +196,7 @@
             }
         });
 
-        var proceed = function (_id, action, additional_fields, method) {
+        var proceed = function (_id, action, additional_fields, method, id_name) {
             var form = document.createElement('form');
             form.setAttribute('method', method);
             form.setAttribute('action', action);
@@ -210,7 +211,7 @@
                 form.appendChild(_f);
             };
 
-            create_field('pde_id', _id);
+            create_field(id_name, _id);
 
             for (var field in additional_fields) {
                 create_field(field, additional_fields[field]);
