@@ -95,23 +95,47 @@ class Paper(db.Model):
 
     filename = db.Column(db.String, unique=True)
     upload_date = db.Column(db.Date)
+    uploader_id = db.Column(db.Integer, db.ForeignKey('user._id'))
+    uploader = db.relationship('User',
+                               primaryjoin='Paper.uploader_id == User._id',
+                               backref='uploaded_papers')
 
     __table_args__ = (db.UniqueConstraint('author',
                                           'title',
                                           name='paper_unique_constraint'),)
 
-    def __init__(self, author, title, filename, upload_date):
+    def __init__(self, author, title, filename, upload_date, uploader_id):
         self.author = author
         self.title = title
 
         self.filename = filename
         self.upload_date = upload_date
+        self.uploader_id = uploader_id
+
+
+    def force_statistics_data(self):
+        self.forwarded = len(filter(lambda entity: entity.status == 0x1,
+                                    self.dispatched_entities))
+        self.reading = len(filter(lambda entity: entity.status == 0x2,
+                                  self.dispatched_entities))
+        self.read = len(filter(lambda entity: entity.status == 0x3,
+                               self.dispatched_entities))
+        self.statistics = '''<span style="text-align: center;">
+        <strong style="margin-right: 7px;">%s</strong>/
+        <strong style="margin-right: 7px; color: orange;">%s</strong>/
+        <strong style="margin-right: 7px; color: green;">%s</strong>
+        </span>''' % (
+            self.forwarded,
+            self.reading,
+            self.read
+        )
 
 
     def __repr__(self):
-        return '''<Paper('%s', '%s', '%s', '%s')>''' % (self.author,
-                                                        self.title,
-                                                        self.filename,
-                                                        self.upload_date)
+        return '''<Paper('%s', '%s', '%s', '%s', '%s')>''' % (self.author,
+                                                              self.title,
+                                                              self.filename,
+                                                              self.upload_date,
+                                                              self.uploader_id)
 
 
