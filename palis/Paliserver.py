@@ -7,7 +7,6 @@ from flask import session, request, redirect, url_for, flash, jsonify, send_from
 from flask.ext.uploads import UploadNotAllowed
 from flask.templating import render_template
 from sqlalchemy.exc import IntegrityError
-import wtforms
 from palis import app, db, paper_uploader
 from palis.forms import LoginForm, ForwardForm, UploadForm
 from palis.misc import gen_filename
@@ -17,14 +16,14 @@ state = {'agent': ''}
 
 
 @app.before_first_request
-def init_db(exception=None):
+def init_db(_=None):
     db.create_all()
 
     app.jinja_env.globals.update(user_list=User.query.all())
 
 
 @app.before_request
-def init_current_user(exception=None):
+def init_current_user(_=None):
     username = session.get('username', None)
     if username:
         user = User.query.filter_by(username=username).first()
@@ -66,8 +65,9 @@ def login():
                            login_active=True)
 
 
-@app.route('/user')
-def show_list():
+@app.route('/user', defaults={'active': 'from'})
+@app.route('/user/active/<active>')
+def show_list(active):
     if 'username' not in session:
         return redirect(url_for('login'))
 
@@ -86,7 +86,34 @@ def show_list():
                                                  reverse=True),
                            pd_entities_from=user.dispatches,
                            forward_form=forward_form,
-                           show_list_active=True)
+                           show_list_active=True,
+                           active=active)
+
+
+@app.route('/papers')
+def view_papers():
+    if 'username' in session:
+        user = User.query.filter_by(username=session['username']).first()
+        my_papers = user.uploaded_papers
+        all_papers = Paper.query.all()
+        for paper in all_papers:
+            paper.force_statistics_data()
+
+        forward_form = ForwardForm()
+        forward_form.users_selected.choices = [(u._id, u.username) for u in User.query.all()
+                                               if u._id not in (user._id,
+                                                                User.query.filter_by(username='admin').first()._id)]
+    else:
+        my_papers = None
+        all_papers = None
+        forward_form = None
+
+    return render_template('view_papers.html',
+                           paper_all=all_papers,
+                           paper_my=my_papers,
+                           forward_form=forward_form,
+                           logged_in=forward_form) # if logged in, form is always True
+
 
 
 @app.route('/read', methods=['POST'])
@@ -106,18 +133,23 @@ def read_paper():
 
 @app.route('/forward', methods=['POST'])
 def forward_paper():
-    pde = PaperDispatchEntity.query.filter_by(_id=request.form['pde_id']).first()
+    if 'username' not in session:
+        return redirect(url_for('login'))
 
-    for _, user_id in filter(lambda (x, _): x == 'users_selected',
-                             request.form.items()):
+    for user_id in request.form['selected_uid'].split(',')[:-1]:
         new_pde = PaperDispatchEntity(request.form['from_uid'],
                                       user_id,
-                                      pde.paper._id,
+                                      request.form['paper_id'],
                                       0x1,
                                       date.today())
+        app.logger.info(new_pde)
         db.session.add(new_pde)
-
-    db.session.commit()
+        try:
+            db.session.commit()
+            app.logger.info('db committed')
+        except IntegrityError:
+            db.session.rollback()
+            app.logger.error('%s already in db' % new_pde)
 
     return redirect(url_for('show_list'))
 
@@ -150,7 +182,8 @@ def upload_paper():
                                    error='Please select file to upload.',
                                    form=form, upload_paper_active=True)
 
-        paper = Paper(form.author.data, form.title.data, filename, date.today())
+        paper = Paper(form.author.data, form.title.data, filename, date.today(),
+                      User.query.filter_by(username=session['username']).first()._id)
         db.session.add(paper)
         try:
             db.session.commit()
@@ -186,7 +219,7 @@ def withdraw_dispatch():
 
     db.session.commit()
 
-    return redirect(url_for('show_list'))
+    return redirect(url_for('show_list', active='to' if status != 'refuse' else 'from'))
 
 
 @app.route('/hasten', methods=['POST'])
@@ -203,7 +236,7 @@ def redispatch():
 
     db.session.commit()
 
-    return redirect(url_for('show_list'))
+    return redirect(url_for('show_list', active='to'))
 
 
 @app.route('/logout')
