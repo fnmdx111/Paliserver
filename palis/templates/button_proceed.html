@@ -1,0 +1,35 @@
+{% macro make_button(text, action, btn_class, _id, additional_fields=[], method="'post'", id_name="'pde_id'") -%}
+    <button type="button" class="btn btn-small {{ btn_class }}"
+            onclick="proceed({{ _id }}, '{{ url_for(action) }}', {{ additional_fields }}, {{ method }}, {{ id_name }});">
+        {{ text }}
+    </button>
+{%- endmacro %}
+
+{% macro make_button_js() -%}
+    <script type="text/javascript">
+        var proceed = function (_id, action, additional_fields, method, id_name) {
+            var form = document.createElement('form');
+            form.setAttribute('method', method);
+            form.setAttribute('action', action);
+            form.style.display = 'hidden';
+            document.body.appendChild(form);
+
+            var create_field = function (name, value) {
+                var _f = document.createElement('input');
+                _f.setAttribute('type', 'hidden');
+                _f.setAttribute('name', name);
+                _f.setAttribute('value', value);
+                form.appendChild(_f);
+            };
+
+            create_field(id_name, _id);
+
+            for (var field in additional_fields) {
+                create_field(field, additional_fields[field]);
+            }
+
+            form.submit();
+        }
+    </script>
+{%- endmacro %}
+
