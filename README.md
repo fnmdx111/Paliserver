@@ -57,7 +57,7 @@ Log
 TODO
 ----
 
-*   complete forward modal for paper list (not in `/user')
+*   complete forward modal for paper list (not in `/user`)
 
 *   fix bugs in upload interface
 
