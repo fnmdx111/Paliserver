@@ -10,6 +10,7 @@ from sqlalchemy.exc import IntegrityError
 import wtforms
 from palis import app, db, paper_uploader
 from palis.forms import LoginForm, ForwardForm, UploadForm
+from palis.misc import gen_filename
 from palis.models import User, PaperDispatchEntity, Paper
 
 state = {'agent': ''}
@@ -43,7 +44,8 @@ def login():
     if 'username' in session and request.method != 'POST':
         return render_template('login.html',
                                banner_message='User %s has already logged in.' % session['username'],
-                               form=form)
+                               form=form,
+                               login_active=True)
 
     if request.method == 'POST' and form.validate_on_submit():
         logout()
@@ -60,7 +62,8 @@ def login():
 
     return render_template('login.html',
                            banner_message='Login for simple paper list service.',
-                           form=form)
+                           form=form,
+                           login_active=True)
 
 
 @app.route('/user')
@@ -82,7 +85,8 @@ def show_list():
                                                  cmp=lambda x, y: cmp(x.dispatch_date, y.dispatch_date),
                                                  reverse=True),
                            pd_entities_from=user.dispatches,
-                           forward_form=forward_form)
+                           forward_form=forward_form,
+                           show_list_active=True)
 
 
 @app.route('/read', methods=['POST'])
@@ -139,26 +143,34 @@ def upload_paper():
 
     if request.method == 'POST' and 'paper' in request.files:
         try:
-            filename = paper_uploader.save(request.files['paper'])
+            filename = gen_filename(form.title.data, form.author.data) + '.'
+            paper_uploader.save(request.files['paper'], name=filename)
         except UploadNotAllowed:
-            return render_template('upload.html', error='Please select file to upload.', form=form)
+            return render_template('upload.html',
+                                   error='Please select file to upload.',
+                                   form=form, upload_paper_active=True)
 
         paper = Paper(form.author.data, form.title.data, filename, date.today())
         db.session.add(paper)
-        db.session.commit()
+        try:
+            db.session.commit()
+        except IntegrityError:
+            db.session.delete(paper)
+            return render_template('upload.html', error='Filename already exists.', form=form,
+                                   upload_paper_active=True)
 
         flash('Paper uploaded successfully.')
-        return render_template('upload.html', success='Paper uploaded successfully.', form=UploadForm())
+        return render_template('upload.html', success='Paper uploaded successfully.', form=UploadForm(),
+                               upload_paper_active=True)
 
-    return render_template('upload.html', form=form)
+    return render_template('upload.html', form=form, upload_paper_active=True)
 
 
 @app.route('/download', methods=['GET'])
 def download_paper():
-    pde_id = request.args['pde_id']
-    pde = PaperDispatchEntity.query.filter_by(_id=pde_id).first()
+    paper_id = request.args['paper_id']
 
-    return send_from_directory(app.instance_path + r'\papers', pde.paper.filename, )
+    return send_from_directory(app.instance_path + r'\papers', Paper.query.filter_by(_id=paper_id).first().filename)
 
 
 @app.route('/withdraw', methods=['POST'])
