@@ -1,30 +1,25 @@
 {% extends "base.html" %}
 
+{% macro make_alert(_id, text, class="alert-error", hide="hide") -%}
+    <div id="{{ _id }}" class="alert {{ class }} fade in {{ hide }}" data-alert="alert">
+        <button type="button" class="close" data-dismiss="alert">x</button>
+        {{ text }}
+    </div>
+{%- endmacro %}
 
 {% block body_content %}
     {{ super() }}
 
     <div class="container">
         <h3>To upload a new paper, please first fill in this form</h3>
-        <div id="exist" class="alert alert-error fade in hide" data-alert="alert">
-            <button type="button" class="close" data-dismiss="alert">x</button>
-            This paper already exists.
-        </div>
-        <div id="incomplete" class="alert alert-error fade in hide" data-alert="alert">
-            <button type="button" class="close" data-dismiss="alert">x</button>
-            Incomplete form, please refill.
-        </div>
+        {{ make_alert("exist", "This paper already exists.") }}
+        {{ make_alert("incomplete", "Incomplete form, please refill.") }}
+        {{ make_alert("no-file-selected", "Incomplete form, please refill.") }}
         {% if error %}
-            <div id="{{ custom_error }}" class="alert alert-error fade in" data-alert="alert">
-                <button type="button" class="close" data-dismiss="alert">x</button>
-                {{ error }}
-            </div>
+            {{ make_alert("", error, "") }}
         {% endif %}
         {% if success %}
-            <div id="{{ custom_success }}" class="alert alert-success fade in" data-alert="alert">
-                <button type="button" class="close" data-dismiss="alert">x</button>
-                {{ success }}
-            </div>
+            {{ make_alert("", success, "alert-success", "") }}
         {% endif %}
         <form id="validate_paper" class="form form-horizontal"
               enctype="multipart/form-data"
@@ -58,17 +53,23 @@
                     title: $('input[name="title"]').val()
                 }, function (response) {
                     var resp = response['result'];
+                    var alert = $('#' + resp);
                     if (resp == 'incomplete') {
-                        $('#' + resp).fadeIn();
+                        alert.fadeIn();
                     } else if (resp == 'exist') {
-                        $('#' + resp).fadeIn();
+                        alert.fadeIn();
                     } else {
-                        $('.form').submit();
+                        if (!$('input:file').val()) {
+                            $('#no-file-selected').fadeIn();
+                        } else {
+                            $('.form').submit();
+                        }
                     }
                 });
                 return false;
             });
         });
+
     </script>
 {% endblock %}
 
