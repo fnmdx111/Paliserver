@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% import "button_proceed.html" as btn %}
+{% import "modals.html" as modals %}
+
+{% macro make_thead(heads) -%}
+    <thead><tr>
+        {% for head in heads %}
+            <th>{{ head }}</th>
+        {% endfor %}
+        <th class="pull-right">Available Operations</th>
+    </tr></thead>
+{% endmacro %}
+
+{% macro make_all_thead() -%}
+    {{ make_thead(['ID', 'Upload Date', 'Forwarded/Reading/Read', 'Title', 'Author', 'Uploader']) }}
+{%- endmacro %}
+
+{% macro make_my_thead() -%}
+    {{ make_thead(['ID', 'Upload Date', 'Forwarded/Reading/Read', 'Title', 'Author']) }}
+{%- endmacro %}
+
+{% macro make_tr_iterate(properties) -%}
+    {% for prop in properties %}
+        <td>{{ prop }}</td>
+    {% endfor %}
+{%- endmacro %}
+
+{% macro make_all_paper_trivial(paper) -%}
+    {{ make_tr_iterate([paper._id, paper.upload_date, paper.statistics|safe,
+                        paper.title, paper.author, paper.uploader.username]) }}
+{%- endmacro %}
+
+{% macro make_my_paper_trivial(paper) -%}
+    {{ make_tr_iterate([paper._id, paper.upload_date, paper.statistics|safe,
+                        paper.title, paper.author]) }}
+{%- endmacro %}
+
+
+{% block body_content %}
+    {{ super() }}
+
+    <div class="container">
+        <ul class="nav nav-tabs" id="tabs">
+            <li class="active">
+                <a href="#all" data-toggle="tab">
+                    <i class="icon-th"></i> Paper Collection
+                </a>
+            </li>
+            {% if paper_my %}
+                <li class="">
+                    <a href="#my" data-toggle="tab">
+                        <i class="icon-th"></i> Papers I uploaded
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+
+        <div class="tab-content">
+            <div class="tab-pane active" id="all">
+                <div class="container"><h3>These are all the papers we have here</h3>
+                    <table class="table table-hover">
+                        {{ make_all_thead() }}
+                        <tbody>
+                            {% for paper in paper_all %}
+                                <tr>
+                                    {{ make_all_paper_trivial(paper) }}
+                                    <td>
+                                        {% if logged_in %}
+                                            <div class="pull-right">
+                                                <div class="btn-group">
+                                                    <button type="button" data-target="#forward-dialog"
+                                                            role="button" class="btn btn-small"
+                                                            data-toggle="modal">
+                                                        Forward to
+                                                    </button>
+                                                </div>
+                                                {{ modals.make_forward_dialog(forward_form,
+                                                                              paper._id,
+                                                                              'paper_id') }}
+                                            </div>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% if logged_in %}
+                <div class="tab-pane" id="my">
+                    {% if paper_my %}
+                        <div class="container"><h3>These are the papers you uploaded</h3>
+                            <table class="table table-hover">
+                                {{ make_my_thead() }}
+                                <tbody>
+                                    {% for paper in paper_my %}
+                                        <tr>
+                                            {{ make_my_paper_trivial(paper) }}
+                                            <td>
+                                                <div class="pull-right">
+                                                    <div class="btn-group">
+                                                        <button type="button" data-target="#forward-dialog"
+                                                                role="button" class="btn btn-small"
+                                                                data-toggle="modal">
+                                                            Forward to
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="hero-unit">
+                            <p class="lead">Seems you didn't uploaded any paper so far :(</p>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+
+
+{% block bootstrap_js_bottom %}
+    {{ super() }}
+
+    {{ modals.make_forward_dialog_js() }}
+{% endblock %}
