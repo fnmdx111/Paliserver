@@ -1,6 +1,12 @@
 {% extends "bootstrap_responsive.html" %}
 {% import "bootstrap_wtf.html" as wtf %}
 
+{% macro make_active(what) -%}
+    {% if what %}
+        active
+    {% endif %}
+{%- endmacro %}
+
 {% block body_content %}
     <div class="navbar navbar-inverse navbar-fixed-top">
         <div class="navbar-inner">
@@ -18,17 +24,22 @@
                                                          {% endif %}</a>
                 <div class="nav-collapse collapse">
                     <ul class="nav">
-                        <li class="active">
+                        <li class="{{ make_active(show_list_active) }}">
                             <a href="{{ url_for('show_list') }}">
                                 <i class="icon-home icon-white"></i> Home
                             </a>
                         </li>
-                        <li>
+                        <li class="{{ make_active(upload_paper_active) }}">
                             <a href="{{ url_for('upload_paper') }}">
                                 <i class="icon-upload icon-white"></i> Upload
                             </a>
                         </li>
-                        <li>
+                        <li class="{{ make_active(view_papers_active) }}">
+                            <a href="{{ url_for('view_papers') }}">
+                                <i class="icon-upload icon-white"></i> Papers
+                            </a>
+                        </li>
+                        <li class="{{ make_active(login_active) }}">
                             <a href="{{ url_for('login') }}">
                                 <i class="icon-user icon-white"></i> Login
                             </a>
