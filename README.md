@@ -50,6 +50,14 @@ Log
     first push
 
 
+TODO
+----
+
+*   dispatch interface for admin
+
+*   some bugs in upload interface
+
+
 licensed under lgpl
 
 author: <mailto:chsc4698@gmail.com>
