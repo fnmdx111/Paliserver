@@ -1,4 +1,6 @@
 {% extends "base.html" %}
+{% import "modals.html" as modals %}
+{% import "button_proceed.html" as btn %}
 
 {% macro make_label(status_class, status_str) -%}
     {% if status_class %}
@@ -36,19 +38,16 @@
 {%- endmacro %}
 
 {% macro make_tab_active_to() -%}
-    {{ make_active_class(pd_entities_to) }}
+    {% if active == 'to' -%}
+        active
+    {%- endif %}
 {%- endmacro  %}
 
 {% macro make_tab_active_from() -%}
-    {{ make_active_class(not pd_entities_to and pd_entities_from) }}
+    {% if active == 'from' -%}
+        active
+    {%- endif %}
 {%- endmacro  %}
-
-{% macro make_button(text, action, btn_class, _id, additional_fields=[], method="'post'", id_name="'pde_id'") -%}
-    <button type="button" class="btn btn-small {{ btn_class }}"
-            onclick="proceed({{ _id }}, '{{ url_for(action) }}', {{ additional_fields }}, {{ method }}, {{ id_name }});">
-        {{ text }}
-    </button>
-{%- endmacro %}
 
 
 {% block head_content %}
@@ -60,16 +59,16 @@
     {{ super() }}
     <div class="container">
         <ul class="nav nav-tabs" id="tabs">
-            <li class="{{ make_tab_active_to() }}">
+            <li class="{% if active == 'from' -%} active {%- endif %}">
                 <a href="#received" data-toggle="tab"><i class="icon-inbox"></i> Received</a>
             </li>
-            <li class="{{ make_tab_active_from() }}">
+            <li class="{% if active == 'to' -%} active {%- endif %}">
                 <a href="#forwarded" data-toggle="tab"><i class="icon-share"></i> Forwarded</a>
             </li>
         </ul>
 
         <div class="tab-content">
-            <div class="tab-pane {{ make_tab_active_to() }}" id="received">
+            <div class="tab-pane {{ make_tab_active_from() }}" id="received">
                 {% if pd_entities_to %}
                     <div class="container"><h3>Papers that are forwarded to you</h3>
                         <table class="table table-hover">
@@ -94,23 +93,25 @@
                                                 <div class="pull-right">
                                                     <div class="btn-group">
                                                         {% if read_btn_text %}
-                                                        {{ make_button(read_btn_text, 'read_paper',
-                                                                       read_btn_class, pd_entity._id) }}
+                                                        {{ btn.make_button(read_btn_text, 'read_paper',
+                                                                           read_btn_class, pd_entity._id) }}
                                                         {% endif %}
-                                                        {{ make_button('Download', 'download_paper',
-                                                                       '', pd_entity.paper._id, [],
-                                                                       "'get'", "'paper_id'") }}
-                                                        <button type="button" href="#forward-dialog"
+                                                        {{ btn.make_button('Download', 'download_paper',
+                                                                           '', pd_entity.paper._id, [],
+                                                                           "'get'", "'paper_id'") }}
+                                                        <button type="button"
+                                                                data-target="#forward-dialog{{ pd_entity.paper._id }}"
                                                                 role="button" class="btn btn-small"
                                                                 data-toggle="modal">
                                                             Forward to
                                                         </button>
-                                                        {{ make_button('Refuse', 'withdraw_dispatch',
-                                                                       'btn-danger', pd_entity._id,
-                                                                       {'status': 'refuse'}) }}
+                                                        {{ btn.make_button('Refuse', 'withdraw_dispatch',
+                                                                           'btn-danger', pd_entity._id,
+                                                                           {'status': 'refuse'}) }}
                                                     </div>
-                                                    {% import "modals.html" as modals %}
-                                                    {{ modals.make_forward_dialog(forward_form, pd_entity._id) }}
+                                                    {{ modals.make_forward_dialog(forward_form,
+                                                                                  pd_entity.paper._id,
+                                                                                  "paper_id") }}
                                                 </div>
                                             </td>
                                         </tr>
@@ -126,7 +127,7 @@
                 {% endif %}
             </div>
 
-            <div class="tab-pane {{ make_tab_active_from() }}" id="forwarded">
+            <div class="tab-pane {{ make_tab_active_to() }}" id="forwarded">
                 {% if pd_entities_from %}
                 <div class="container"><h3>Papers that you forward to others</h3>
                     <table class="table table-hover">
@@ -145,14 +146,15 @@
                                     <div class="pull-right btn-group">
                                         {% if tr_class %}
                                             {% set buttons = [('redispatch', 'Redispatch', 'btn-info', [])] %}
-                                            {{ make_button('Redispatch', 'redispatch', 'btn-info', pd_entity._id) }}
+                                            {{ btn.make_button('Redispatch', 'redispatch', 'btn-info', pd_entity._id) }}
                                         {% else %}
                                             {% if not pd_entity.status_str == 'Already Read' %}
-                                                {{ make_button('Hasten this dispatch', 'hasten_dispatch',
-                                                               '', pd_entity._id) }}
+                                                {{ btn.make_button('Hasten this dispatch', 'hasten_dispatch',
+                                                                   '', pd_entity._id) }}
                                             {% endif %}
-                                            {{ make_button('Withdraw', 'withdraw_dispatch', 'btn-danger', pd_entity._id,
-                                                           "{'status': 'withdraw'}") }}
+                                            {{ btn.make_button('Withdraw', 'withdraw_dispatch',
+                                                               'btn-danger', pd_entity._id,
+                                                               "{'status': 'withdraw'}"|safe) }}
                                         {% endif %}
                                     </div>
                                 </td>
@@ -175,51 +177,15 @@
     {{ super() }}
 
     <script type="text/javascript">
-
         $('#tabs').find('a').click(function (e) {
             e.preventDefault();
             $(this).tab('show');
             $(this).find('i').addClass('icon-white');
         });
-
-        $('a.checkbox-anchor').click(function (e) {
-            var checkbox = $('#' + $(this).attr('id').substring(1));
-            var i = $('#i' + $(this).attr('id').substring(1));
-
-            checkbox.attr('checked', !checkbox.attr('checked'));
-            if (checkbox.attr('checked')) {
-                i.removeClass('icon-remove-sign');
-                i.addClass('icon-ok-sign');
-            } else {
-                i.removeClass('icon-ok-sign');
-                i.addClass('icon-remove-sign');
-            }
-        });
-
-        var proceed = function (_id, action, additional_fields, method, id_name) {
-            var form = document.createElement('form');
-            form.setAttribute('method', method);
-            form.setAttribute('action', action);
-            form.style.display = 'hidden';
-            document.body.appendChild(form);
-
-            var create_field = function (name, value) {
-                var _f = document.createElement('input');
-                _f.setAttribute('type', 'hidden');
-                _f.setAttribute('name', name);
-                _f.setAttribute('value', value);
-                form.appendChild(_f);
-            };
-
-            create_field(id_name, _id);
-
-            for (var field in additional_fields) {
-                create_field(field, additional_fields[field]);
-            }
-
-            form.submit();
-        }
     </script>
+
+    {{ btn.make_button_js() }}
+    {{ modals.make_forward_dialog_js() }}
 {% endblock %}
 
 
