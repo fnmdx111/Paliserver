@@ -20,6 +20,10 @@ Dependencies
 Log
 ---
 
+*   2012/9/22T0054 - under dev
+
+    introduced paper list viewing
+
 *   2012/9/20T0252 - under dev
 
     introduced download
@@ -53,9 +57,9 @@ Log
 TODO
 ----
 
-*   dispatch interface for admin
+*   complete forward modal for paper list (not in `/user')
 
-*   some bugs in upload interface
+*   fix bugs in upload interface
 
 
 licensed under lgpl
