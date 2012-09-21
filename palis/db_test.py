@@ -26,7 +26,7 @@ if True:
         db.session.rollback()
 
     paper1 = Paper(u'张章', u'哈哈', u'zhang_zhang_ha-ha.pdf', date(2012, 6, 2))
-    paper2 = Paper(u'李丽', u'哼哼', u'li_li_heng-heng.pdf', date(2012, 6, 2))
+    paper2 = Paper(u'李丽', u'哼哼', u'Learning.GNU.Emacs.3rd.edition.pdf', date(2012, 6, 2))
     paper3 = Paper(u'Andrew S. Tanenbaum', u'Modern Operating Systems',
                    u'andrew_s_tanenbaum_Modern-Operating-Systems.pdf', date(2012, 6, 5))
 
