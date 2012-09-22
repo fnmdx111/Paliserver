@@ -4,7 +4,7 @@
 # Parc Ain't Robust Client
 from datetime import date
 from flask import session, request, redirect, url_for, flash, jsonify, send_from_directory
-from flask.ext.uploads import UploadNotAllowed
+from flask.ext.uploads import UploadNotAllowed, extension
 from flask.templating import render_template
 from sqlalchemy.exc import IntegrityError
 from palis import app, db, paper_uploader
@@ -211,7 +211,7 @@ def upload_paper():
 
     if request.method == 'POST' and 'paper' in request.files:
         try:
-            filename = gen_filename(form.title.data, form.author.data) + '.'
+            filename = gen_filename(form.title.data, form.author.data) + '.' + extension(request.files['paper'].filename)
             paper_uploader.save(request.files['paper'], name=filename)
         except UploadNotAllowed:
             return render_template('upload.html',
@@ -238,6 +238,7 @@ def upload_paper():
 @app.route('/download', methods=['GET'])
 def download_paper():
     paper_id = request.args['paper_id']
+    app.logger.info(Paper.query.filter_by(_id=paper_id).first().filename)
 
     return send_from_directory(app.instance_path + r'\papers', Paper.query.filter_by(_id=paper_id).first().filename)
 
