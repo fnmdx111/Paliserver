@@ -20,6 +20,10 @@ Dependencies
 Log
 ---
 
+*   2012/9/22T1526 - under dev
+
+    introduced admin view
+
 *   2012/9/22T0054 - under dev
 
     introduced paper list viewing
@@ -57,7 +61,7 @@ Log
 TODO
 ----
 
-*   complete forward modal for paper list (not in `/user`)
+*   reuse modals
 
 *   fix bugs in upload interface
 
