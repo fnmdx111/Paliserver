@@ -17,6 +17,24 @@ class User(db.Model):
         self.password = password
 
 
+    def force_statistics(self):
+        self.forwarded = len(filter(lambda _: _,
+                                    self.papers))
+        self.reading = len(filter(lambda entity: entity.status == 0x2,
+                                  self.papers))
+        self.read = len(filter(lambda entity: entity.status == 0x3,
+                               self.papers))
+        self.statistics = '''<span style="text-align: center;">
+        <strong style="margin-right: 7px;">%s</strong>/
+        <strong style="margin-right: 7px; color: orange;">%s</strong>/
+        <strong style="margin-right: 7px; color: green;">%s</strong>
+        </span>''' % (
+            self.forwarded,
+            self.reading,
+            self.read
+        )
+
+
     def __repr__(self):
         return '''<User('%s', '%s', '%s')>''' % (self._id, self.username, self.password)
 
