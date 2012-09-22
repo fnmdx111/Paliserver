@@ -148,10 +148,6 @@
                                             {% set buttons = [('redispatch', 'Redispatch', 'btn-info', [])] %}
                                             {{ btn.make_button('Redispatch', 'redispatch', 'btn-info', pd_entity._id) }}
                                         {% else %}
-                                            {% if not pd_entity.status_str == 'Already Read' %}
-                                                {{ btn.make_button('Hasten this dispatch', 'hasten_dispatch',
-                                                                   '', pd_entity._id) }}
-                                            {% endif %}
                                             {{ btn.make_button('Withdraw', 'withdraw_dispatch',
                                                                'btn-danger', pd_entity._id,
                                                                "{'status': 'withdraw'}"|safe) }}
@@ -180,7 +176,6 @@
         $('#tabs').find('a').click(function (e) {
             e.preventDefault();
             $(this).tab('show');
-            $(this).find('i').addClass('icon-white');
         });
     </script>
 
