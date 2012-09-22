@@ -69,12 +69,17 @@
                                             <div class="pull-right">
                                                 <div class="btn-group">
                                                     {{ btn.make_button('<i class="icon-download-alt"></i> '|safe,
-                                                                           'download_paper', '',
-                                                                           paper._id, [], "'get'", "'paper_id'") }}
+                                                                       'download_paper', '',
+                                                                       paper._id, [], "'get'", "'paper_id'") }}
                                                     {{ modals.make_forward_dialog_button(
                                                             paper._id,
                                                             cur_uid
                                                         ) }}
+                                                    {% if cur_username == 'admin' %}
+                                                        {{ btn.make_button('<i class="icon-remove"></i> '|safe,
+                                                                           'delete_paper', 'btn-danger',
+                                                                           paper._id, id_name="'paper_id'") }}
+                                                    {% endif %}
                                                 </div>
                                             </div>
                                         {% endif %}
