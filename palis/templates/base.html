@@ -62,15 +62,14 @@
 {% endblock %}
 
 {% block bootstrap_js_bottom %}
-    <div style="position: absolute; bottom: 0; width: 100%;">
-    <footer class="footer" style="background-color: whiteSmoke; border-top: 1px #e5e5e5; color: #333; margin-top: 70px; padding-top: 35px; padding-bottom: 35px;">
+    <footer class="footer" style="background-color: whiteSmoke; border-top: 1px solid #e5e5e5; color: #333; margin-top: 70px; padding: 70px 0; display: block;">
         <div class="container">
             <p class="">If you find any bug, please report it to
                 <a href="https://github.com/mad4alcohol/Paliserver/issues">the issue tracker</a>.
             </p>
             <p>Icons from <a href="http://glyphicons.com">Glyphicons Free</a>, licensed under <a href="http://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>.</p>
         </div>
-    </footer></div>
+    </footer>
     {{ super() }}
 {% endblock %}
 
