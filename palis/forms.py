@@ -72,3 +72,11 @@ class UploadForm(Form, object):
         return True
 
 
+class RegistrationForm(Form, object):
+    username = TextField('Username', validators=[validators.Required()])
+    password = PasswordField('Password', validators=[validators.Required(),
+                                                     validators.EqualTo('confirm',
+                                                                        message='passwords must match')])
+    confirm = PasswordField('Again', validators=[validators.Required()])
+
+
