@@ -1,24 +1,24 @@
 {% import "bootstrap_wtf.html" as wtf %}
 
 
-{% macro make_forward_dialog(forward_form, _id, id_name) -%}
-    <div class="modal hide fade" id="forward-dialog{{ _id }}" tabindex="-1"
-         role="dialog" aria-labelledby="forward-dialog{{ _id }}-label"
+{% macro make_forward_dialog(forward_form, _id, id_name, id_prefix='forward-dialog') -%}
+    <div class="modal hide fade" id="{{ id_prefix }}{{ _id }}" tabindex="-1"
+         role="dialog" aria-labelledby="{{ id_prefix }}{{ _id }}-label"
          aria-hidden="true">
         <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-            <h3 id="forward-dialog{{ _id }}-label">Who shall be forwarded to...</h3>
+            <h3 id="{{ id_prefix }}{{ _id }}-label">Who shall be forwarded to...</h3>
         </div>
         <div class="modal-body">
-            <form action="{{ url_for('forward_paper') }}" id="forward-form{{ _id }}" method="post">
+            <form action="{{ url_for('forward_paper') }}" id="{{ id_prefix }}-form-{{ _id }}" method="post">
                 <input type="hidden" name="{{ id_name }}" value="{{ _id }}"/>
                 <input type="hidden" name="from_uid" value="{{ cur_uid }}"/>
                 <ul class="nav nav-pills nav-stacked">
                     {% for field in forward_form.users_selected %}
-                        {% set field_class = "hidden-checkbox" ~ field.id ~ "-" ~ _id %}
+                        {% set field_class = "hidden-checkbox" ~ field.id ~ "-" ~ _id ~ "-" ~ id_prefix %}
                         {{ field(style="display: none;", class=field_class)|safe }}
-                        <li><a class="checkbox-anchor" id="a{{ field.id }}-{{ _id }}">
-                            <i class="indicator icon-remove-sign" id="i{{ field.id }}-{{ _id }}"></i>
+                        <li><a class="checkbox-anchor" id="a{{ field.id }}-{{ _id }}-{{ id_prefix }}">
+                            <i class="indicator icon-remove-sign" id="i{{ field.id }}-{{ _id }}-{{ id_prefix }}"></i>
                             {{ field.label(class="checkbox pull-right", style="")|safe }}
                         </a></li>
                     {% endfor %}
@@ -27,11 +27,11 @@
         </div>
         <div class="modal-footer">
             <button class="btn" data-dismiss="modal"
-                    aria-hidden="true" data-target="#forward-dialog{{ _id }}">
+                    aria-hidden="true" data-target="#{{ id_prefix }}{{ _id }}">
                 Close
             </button>
             <button class="btn btn-primary" data-dismiss="modal"
-                    onclick="post_form('forward-form{{ _id }}', {{ _id }}, {{ cur_uid }});">
+                    onclick="post_form('{{ id_prefix }}-form-{{ _id }}', {{ _id }}, {{ cur_uid }});">
                 Forward
             </button>
         </div>
@@ -41,14 +41,9 @@
 {% macro make_forward_dialog_js() -%}
 
     <script type="text/javascript">
-        var post_form = function (form_id, _id, from_uid_) {
+        var post_form = function (form_id, _id, from_uid_, auto_reload) {
             var result = '';
             var users_checkboxes = document.getElementById(form_id).users_selected;
-            // $('#' + form_id).find('input[name=users_selected]').each(function () {
-            //     if ($(this).attr('checked')) {
-            //         result += $(this).attr('value') + ',';
-            //     }
-            // });
             for (var i = 0; i < users_checkboxes.length; i++) {
                 if (users_checkboxes[i].checked) {
                     result += users_checkboxes[i].value + ",";
@@ -59,7 +54,7 @@
                 paper_id: _id,
                 from_uid: from_uid_
             }, function (e) {
-                $('#' + form_id).modal('hide');
+                location.reload();
             });
         };
 
