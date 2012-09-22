@@ -29,6 +29,8 @@ def init_current_user(_=None):
         user = User.query.filter_by(username=username).first()
 
         app.jinja_env.globals.update(cur_uid=user._id, cur_username=username)
+    else:
+        app.jinja_env.globals.update(cur_uid=None, cur_username=None)
 
 
 @app.route('/')
@@ -95,9 +97,6 @@ def view_papers():
     if 'username' in session:
         user = User.query.filter_by(username=session['username']).first()
         my_papers = user.uploaded_papers
-        all_papers = Paper.query.all()
-        for paper in all_papers:
-            paper.force_statistics_data()
 
         forward_form = ForwardForm()
         forward_form.users_selected.choices = [(u._id, u.username) for u in User.query.all()
@@ -105,8 +104,11 @@ def view_papers():
                                                                 User.query.filter_by(username='admin').first()._id)]
     else:
         my_papers = None
-        all_papers = None
         forward_form = None
+
+    all_papers = Paper.query.all()
+    for paper in all_papers:
+        paper.force_statistics_data()
 
     return render_template('view_papers.html',
                            paper_all=all_papers,
