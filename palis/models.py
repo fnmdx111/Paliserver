@@ -132,20 +132,20 @@ class Paper(db.Model):
 
 
     def force_statistics_data(self):
-        self.forwarded = len(filter(lambda _: _,
-                                    self.dispatched_entities))
-        self.reading = len(filter(lambda entity: entity.status == 0x2,
-                                  self.dispatched_entities))
-        self.read = len(filter(lambda entity: entity.status == 0x3,
-                               self.dispatched_entities))
+        self.forwarded = filter(lambda entity: entity.status == 0x1,
+                                self.dispatched_entities)
+        self.reading = filter(lambda entity: entity.status == 0x2,
+                              self.dispatched_entities)
+        self.read = filter(lambda entity: entity.status == 0x3,
+                           self.dispatched_entities)
         self.statistics = '''<span style="text-align: center;">
         <strong style="margin-right: 7px;">%s</strong>/
         <strong style="margin-right: 7px; color: orange;">%s</strong>/
         <strong style="margin-right: 7px; color: green;">%s</strong>
-        </span>''' % (
-            self.forwarded,
-            self.reading,
-            self.read
+        </span></a>''' % (
+            len(self.forwarded),
+            len(self.reading),
+            len(self.read)
         )
 
 
