@@ -69,7 +69,7 @@ Log
 TODO
 ----
 
-*   reuse modals
+*   fix footer blocking bottom rows of the table
 
 *   fix bugs in upload interface
 
