@@ -71,7 +71,7 @@
                                                     {{ btn.make_button('<i class="icon-download-alt"></i> '|safe,
                                                                            'download_paper', '',
                                                                            paper._id, [], "'get'", "'paper_id'") }}
-                                                    <button type="button" data-target="#forward-dialog"
+                                                    <button type="button" data-target="#forward-dialog{{ paper._id }}"
                                                             role="button" class="btn btn-small"
                                                             data-toggle="modal">
                                                         <i class="icon-share-alt"></i>
@@ -105,13 +105,18 @@
                                                         {{ btn.make_button('<i class="icon-download-alt"></i> '|safe,
                                                                            'download_paper', '',
                                                                            paper._id, [], "'get'", "'paper_id'") }}
-                                                        <button type="button" data-target="#forward-dialog"
+                                                        <button type="button"
+                                                                data-target="#my-forward-dialog{{ paper._id }}"
                                                                 role="button" class="btn btn-small"
                                                                 data-toggle="modal">
                                                             <i class="icon-share-alt"></i>
                                                         </button>
                                                     </div>
                                                 </div>
+                                                {{ modals.make_forward_dialog(forward_form,
+                                                                              paper._id,
+                                                                              "paper_id",
+                                                                              'my-forward-dialog') }}
                                             </td>
                                         </tr>
                                     {% endfor %}
