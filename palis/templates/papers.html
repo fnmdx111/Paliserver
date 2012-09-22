@@ -96,22 +96,16 @@
                                                         {{ btn.make_button(read_btn_text, 'read_paper',
                                                                            read_btn_class, pd_entity._id) }}
                                                         {% endif %}
-                                                        {{ btn.make_button('<i class="icon-download-alt"></i> '|safe, 'download_paper',
+                                                        {{ btn.make_button('<i class="icon-download-alt"></i> '|safe,
+                                                                           'download_paper',
                                                                            '', pd_entity.paper._id, [],
                                                                            "'get'", "'paper_id'") }}
-                                                        <button type="button"
-                                                                data-target="#forward-dialog{{ pd_entity.paper._id }}"
-                                                                role="button" class="btn btn-small"
-                                                                data-toggle="modal">
-                                                            <i class="icon-share-alt"></i>
-                                                        </button>
+                                                        {{ modals.make_forward_dialog_button(pd_entity.paper._id,
+                                                                                             cur_uid) }}
                                                         {{ btn.make_button('Refuse', 'withdraw_dispatch',
                                                                            'btn-danger', pd_entity._id,
                                                                            {'status': 'refuse'}) }}
                                                     </div>
-                                                    {{ modals.make_forward_dialog(forward_form,
-                                                                                  pd_entity.paper._id,
-                                                                                  "paper_id") }}
                                                 </div>
                                             </td>
                                         </tr>
@@ -119,6 +113,7 @@
                                 {% endfor %}
                             </tbody>
                         </table>
+                        {{ modals.make_forward_dialog(forward_form, cur_uid) }}
                     </div>
                 {% else %}
                     <div class="hero-unit">
