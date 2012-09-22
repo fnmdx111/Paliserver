@@ -22,7 +22,7 @@ Log
 
 *   2012/9/22T1713 - 0.0.a (almost done, few tweaks remaining)
 
-    merged `paliserver-admin' and `paliserver-reusable-modal' into `master' branch
+    merged `paliserver-admin` and `paliserver-reusable-modal` into `master` branch
 
 *   2012/9/22T1709 - under dev
 
