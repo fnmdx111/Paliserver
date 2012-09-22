@@ -68,7 +68,7 @@
         </ul>
 
         <div class="tab-content">
-            <div class="tab-pane {{ make_tab_active_from() }}" id="received">
+            <div class="tab-pane {% if active == 'from' -%} active {%- endif %}" id="received">
                 {% if pd_entities_to %}
                     <div class="container"><h3>Papers that are forwarded to you</h3>
                         <table class="table table-hover">
@@ -96,14 +96,14 @@
                                                         {{ btn.make_button(read_btn_text, 'read_paper',
                                                                            read_btn_class, pd_entity._id) }}
                                                         {% endif %}
-                                                        {{ btn.make_button('Download', 'download_paper',
+                                                        {{ btn.make_button('<i class="icon-download-alt"></i> '|safe, 'download_paper',
                                                                            '', pd_entity.paper._id, [],
                                                                            "'get'", "'paper_id'") }}
                                                         <button type="button"
                                                                 data-target="#forward-dialog{{ pd_entity.paper._id }}"
                                                                 role="button" class="btn btn-small"
                                                                 data-toggle="modal">
-                                                            Forward to
+                                                            <i class="icon-share-alt"></i>
                                                         </button>
                                                         {{ btn.make_button('Refuse', 'withdraw_dispatch',
                                                                            'btn-danger', pd_entity._id,
@@ -127,7 +127,7 @@
                 {% endif %}
             </div>
 
-            <div class="tab-pane {{ make_tab_active_to() }}" id="forwarded">
+            <div class="tab-pane {% if active == 'to' -%} active {%- endif %}" id="forwarded">
                 {% if pd_entities_from %}
                 <div class="container"><h3>Papers that you forward to others</h3>
                     <table class="table table-hover">
