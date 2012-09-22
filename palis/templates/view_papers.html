@@ -76,6 +76,11 @@
                                                             data-toggle="modal">
                                                         <i class="icon-share-alt"></i>
                                                     </button>
+                                                    {% if cur_username == 'admin' %}
+                                                    {{ btn.make_button('<i class="icon-remove"></i> '|safe,
+                                                                           'delete_paper', 'btn-danger',
+                                                                           paper._id, [], "'post'", "'paper_id'") }}
+                                                    {% endif %}
                                                 </div>
                                                 {{ modals.make_forward_dialog(forward_form,
                                                                               paper._id,
@@ -111,6 +116,9 @@
                                                                 data-toggle="modal">
                                                             <i class="icon-share-alt"></i>
                                                         </button>
+                                                        {{ btn.make_button('<i class="icon-remove"></i> '|safe,
+                                                                           'delete_paper', 'btn-danger',
+                                                                           paper._id, [], "'post'", "'paper_id'") }}
                                                     </div>
                                                 </div>
                                                 {{ modals.make_forward_dialog(forward_form,
