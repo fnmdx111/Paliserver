@@ -12,11 +12,11 @@
 {% endmacro %}
 
 {% macro make_all_thead() -%}
-    {{ make_thead(['ID', 'Upload Date', 'Forwarded/Reading/Read', 'Title', 'Author', 'Uploader']) }}
+    {{ make_thead(['ID', 'Upload Date', 'Fwd/Rdg/Rd', 'Title', 'Author', 'Uploader']) }}
 {%- endmacro %}
 
 {% macro make_my_thead() -%}
-    {{ make_thead(['ID', 'Upload Date', 'Forwarded/Reading/Read', 'Title', 'Author']) }}
+    {{ make_thead(['ID', 'Upload Date', 'Fwd/Rdg/Rd', 'Title', 'Author']) }}
 {%- endmacro %}
 
 {% macro make_tr_iterate(properties) -%}
@@ -49,7 +49,7 @@
             {% if paper_my %}
                 <li class="">
                     <a href="#my" data-toggle="tab">
-                        <i class="icon-th"></i> Papers I uploaded
+                        <i class="icon-tags"></i> Papers I uploaded
                     </a>
                 </li>
             {% endif %}
@@ -68,10 +68,13 @@
                                         {% if logged_in %}
                                             <div class="pull-right">
                                                 <div class="btn-group">
+                                                    {{ btn.make_button('<i class="icon-download-alt"></i> '|safe,
+                                                                           'download_paper', '',
+                                                                           paper._id, [], "'get'", "'paper_id'") }}
                                                     <button type="button" data-target="#forward-dialog"
                                                             role="button" class="btn btn-small"
                                                             data-toggle="modal">
-                                                        Forward to
+                                                        <i class="icon-share-alt"></i>
                                                     </button>
                                                 </div>
                                                 {{ modals.make_forward_dialog(forward_form,
@@ -99,10 +102,13 @@
                                             <td>
                                                 <div class="pull-right">
                                                     <div class="btn-group">
+                                                        {{ btn.make_button('<i class="icon-download-alt"></i> '|safe,
+                                                                           'download_paper', '',
+                                                                           paper._id, [], "'get'", "'paper_id'") }}
                                                         <button type="button" data-target="#forward-dialog"
                                                                 role="button" class="btn btn-small"
                                                                 data-toggle="modal">
-                                                            Forward to
+                                                            <i class="icon-share-alt"></i>
                                                         </button>
                                                     </div>
                                                 </div>
@@ -127,5 +133,6 @@
 {% block bootstrap_js_bottom %}
     {{ super() }}
 
+    {{ btn.make_button_js() }}
     {{ modals.make_forward_dialog_js() }}
 {% endblock %}
