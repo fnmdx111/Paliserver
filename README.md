@@ -61,6 +61,8 @@ TODO
 
 *   fix bugs in upload interface
 
+*   add a link to `Fwd/Rdg/Rd` to launch a modal which shows who are currently reading this very paper now
+
 
 licensed under lgpl
 
