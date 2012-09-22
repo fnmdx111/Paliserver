@@ -71,15 +71,11 @@
                                                     {{ btn.make_button('<i class="icon-download-alt"></i> '|safe,
                                                                            'download_paper', '',
                                                                            paper._id, [], "'get'", "'paper_id'") }}
-                                                    <button type="button" data-target="#forward-dialog{{ paper._id }}"
-                                                            role="button" class="btn btn-small"
-                                                            data-toggle="modal">
-                                                        <i class="icon-share-alt"></i>
-                                                    </button>
+                                                    {{ modals.make_forward_dialog_button(
+                                                            paper._id,
+                                                            cur_uid
+                                                        ) }}
                                                 </div>
-                                                {{ modals.make_forward_dialog(forward_form,
-                                                                              paper._id,
-                                                                              'paper_id') }}
                                             </div>
                                         {% endif %}
                                     </td>
@@ -87,6 +83,7 @@
                             {% endfor %}
                         </tbody>
                     </table>
+                    {{ modals.make_forward_dialog(forward_form, cur_uid) }}
                 </div>
             </div>
             {% if logged_in %}
@@ -105,23 +102,20 @@
                                                         {{ btn.make_button('<i class="icon-download-alt"></i> '|safe,
                                                                            'download_paper', '',
                                                                            paper._id, [], "'get'", "'paper_id'") }}
-                                                        <button type="button"
-                                                                data-target="#my-forward-dialog{{ paper._id }}"
-                                                                role="button" class="btn btn-small"
-                                                                data-toggle="modal">
-                                                            <i class="icon-share-alt"></i>
-                                                        </button>
+                                                        {{ modals.make_forward_dialog_button(
+                                                            paper._id, cur_uid, 'my-forward-dialog'
+                                                        ) }}
                                                     </div>
                                                 </div>
-                                                {{ modals.make_forward_dialog(forward_form,
-                                                                              paper._id,
-                                                                              "paper_id",
-                                                                              'my-forward-dialog') }}
                                             </td>
                                         </tr>
                                     {% endfor %}
                                 </tbody>
                             </table>
+                            {{ modals.make_forward_dialog(forward_form,
+                                                          cur_uid,
+                                                          "paper_id",
+                                                          'my-forward-dialog') }}
                         </div>
                     {% else %}
                         <div class="hero-unit">

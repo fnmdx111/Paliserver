@@ -27,7 +27,6 @@ def init_current_user(_=None):
     username = session.get('username', None)
     if username:
         user = User.query.filter_by(username=username).first()
-
         app.jinja_env.globals.update(cur_uid=user._id, cur_username=username)
     else:
         app.jinja_env.globals.update(cur_uid=None, cur_username=None)
