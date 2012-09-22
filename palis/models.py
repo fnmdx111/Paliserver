@@ -114,7 +114,7 @@ class Paper(db.Model):
 
 
     def force_statistics_data(self):
-        self.forwarded = len(filter(lambda entity: entity.status == 0x1,
+        self.forwarded = len(filter(lambda _: _,
                                     self.dispatched_entities))
         self.reading = len(filter(lambda entity: entity.status == 0x2,
                                   self.dispatched_entities))
