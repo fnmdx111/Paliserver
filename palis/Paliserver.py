@@ -114,6 +114,7 @@ def view_papers():
                            paper_all=all_papers,
                            paper_my=my_papers,
                            forward_form=forward_form,
+                           view_papers_active=True,
                            logged_in=forward_form) # if logged in, form is always True
 
 
