@@ -8,7 +8,7 @@ from flask.ext.uploads import UploadNotAllowed
 from flask.templating import render_template
 from sqlalchemy.exc import IntegrityError
 from palis import app, db, paper_uploader
-from palis.forms import LoginForm, ForwardForm, UploadForm
+from palis.forms import LoginForm, ForwardForm, UploadForm, RegistrationForm
 from palis.misc import gen_filename
 from palis.models import User, PaperDispatchEntity, Paper
 
@@ -35,6 +35,40 @@ def init_current_user(_=None):
 @app.route('/')
 def index():
     return render_template('index.html')
+
+
+@app.route('/admin', defaults={'active': 'users'})
+@app.route('/admin/active/<active>', methods=['GET', 'POST'])
+def admin(active):
+    if 'username' not in session or session['username'] != 'admin':
+        flash('You are not authorized.')
+        return redirect(url_for('login'))
+
+    form = RegistrationForm(request.form)
+    success, error = '', ''
+    if request.method == 'POST' and form.validate_on_submit():
+        user = User.query.filter_by(username=form.username.data).first()
+        if not user:
+            user = User(form.username.data, form.password.data)
+            success = 'User %s added successfully.' % user.username
+        elif user.password == form.password.data:
+            error = 'This ain\'t login form!'
+        else:
+            user.password = form.password.data
+            success = 'Password modified successfully.'
+        db.session.add(user)
+        db.session.commit()
+
+    users = filter(lambda user: user.username != 'admin', User.query.all())
+    for user in users:
+        user.force_statistics()
+
+    return render_template('admin.html',
+                           form=form,
+                           success=success,
+                           error=error,
+                           users=users,
+                           active=active)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -224,9 +258,35 @@ def withdraw_dispatch():
     return redirect(url_for('show_list', active='to' if status != 'refuse' else 'from'))
 
 
-@app.route('/hasten', methods=['POST'])
-def hasten_dispatch():
-    pass
+@app.route('/delete', methods=['POST'])
+def delete_paper():
+    if 'username' not in session:
+        flash('You are not authorized.')
+        return redirect(url_for('login'))
+
+    paper = Paper.query.filter_by(_id=request.form['paper_id']).first()
+    for pde in paper.dispatched_entities:
+        db.session.delete(pde)
+    db.session.delete(Paper.query.filter_by(_id=request.form['paper_id']).first())
+    # TODO add paper removing mechanism if needed
+    db.session.commit()
+
+    return redirect(url_for('view_papers'))
+
+
+@app.route('/delete_user', methods=['POST'])
+def delete_user():
+    if 'username' not in session or session['username'] != 'admin':
+        flash('You are not authorized.')
+        return redirect(url_for('login'))
+
+    user = User.query.filter_by(_id=request.form['user_id']).first()
+    for pde in user.papers:
+        db.session.delete(pde)
+    db.session.delete(user)
+    db.session.commit()
+
+    return redirect(url_for('admin', active='users'))
 
 
 @app.route('/redispatch', methods=['POST'])

@@ -143,7 +143,7 @@
                                             {% set buttons = [('redispatch', 'Redispatch', 'btn-info', [])] %}
                                             {{ btn.make_button('Redispatch', 'redispatch', 'btn-info', pd_entity._id) }}
                                         {% else %}
-                                            {{ btn.make_button('Withdraw', 'withdraw_dispatch',
+                                            {{ btn.make_button('<i class="icon-remove"></i> '|safe, 'withdraw_dispatch',
                                                                'btn-danger', pd_entity._id,
                                                                "{'status': 'withdraw'}"|safe) }}
                                         {% endif %}

@@ -16,7 +16,11 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </a>
-                <a class="brand" href="{{ url_for('index') }}">
+                <a class="brand" href="{% if cur_username == 'admin' -%}
+                    {{ url_for('admin') }}
+                {%- else -%}
+                    {{ url_for('index') }}
+                {%- endif %}">
                     <i class="icon-book icon-white"></i> {% if cur_username %}
                                                             {{ cur_username }}
                                                          {% else %}
