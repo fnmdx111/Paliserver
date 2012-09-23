@@ -20,6 +20,10 @@ Dependencies
 Log
 ---
 
+*   2012/9/23T1403 - 0.0.b
+
+    paper dispatching detail is now available in `view_papers`
+
 *   2012/9/22T1713 - 0.0.a (almost done, few tweaks remaining)
 
     merged `paliserver-admin` and `paliserver-reusable-modal` into `master` branch

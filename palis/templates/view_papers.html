@@ -25,6 +25,55 @@
     {% endfor %}
 {%- endmacro %}
 
+{% macro make_sub_pde_trivial(pde) -%}
+    <td>{{ pde.dispatch_date }}</td>
+    <td>{{ pde.from_user.username }}</td>
+    <td>{{ pde.to_user.username }}</td>
+{% endmacro %}
+
+{% macro make_tr_class(default_class, status) -%}
+    {% if status == 1 -%}
+        error
+    {%- else -%}
+        {{ default_class }}
+    {%- endif %}
+{%- endmacro %}
+
+{% macro make_more_paper_trivial(paper) -%}
+    <td>{{ paper._id }}</td>
+    <td>{{ paper.upload_date }}</td>
+    <td>{{ paper.statistics|safe }}
+        {% if paper.dispatched_entities %}
+            <a class="btn btn-small tooltip-anchor" href="#" rel="tooltip">
+                <i class="icon-question-sign"></i>
+            </a>
+            <div class="tooltip" style="display: none;">
+                <table class="table table-condensed" style="margin: 0;">
+                    <thead><tr>
+                        <th>Date</th>
+                        <th>From</th>
+                        <th>To</th>
+                    </tr></thead>
+                    <tbody>
+                        {% for forwarded in paper.forwarded %}
+                            <tr class="{{ make_tr_class('', forwarded.forward_status) }}">{{ make_sub_pde_trivial(forwarded) }}</tr>
+                        {% endfor %}
+                        {% for reading in paper.reading %}
+                            <tr class="{{ make_tr_class('info', reading.forward_status) }}">{{ make_sub_pde_trivial(reading) }}</tr>
+                        {% endfor %}
+                        {% for read in paper.read %}
+                            <tr class="{{ make_tr_class('success', read.forward_status) }}">{{ make_sub_pde_trivial(read) }}</tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </td>
+    <td>{{ paper.title }}</td>
+    <td>{{ paper.author }}</td>
+    <td>{{ paper.uploader.username }}</td>
+{%- endmacro %}
+
 {% macro make_all_paper_trivial(paper) -%}
     {{ make_tr_iterate([paper._id, paper.upload_date, paper.statistics|safe,
                         paper.title, paper.author, paper.uploader.username]) }}
@@ -35,6 +84,15 @@
                         paper.title, paper.author]) }}
 {%- endmacro %}
 
+{% block style %}
+    {{ super() }}
+
+    <style type="text/css">
+        .my-warning > td {
+            background-color: orange;
+        }
+    </style>
+{% endblock %}
 
 {% block body_content %}
     {{ super() }}
@@ -63,7 +121,7 @@
                         <tbody>
                             {% for paper in paper_all %}
                                 <tr>
-                                    {{ make_all_paper_trivial(paper) }}
+                                    {{ make_more_paper_trivial(paper) }}
                                     <td>
                                         {% if logged_in %}
                                             <div class="pull-right">
@@ -133,10 +191,18 @@
     </div>
 {% endblock %}
 
-
 {% block bootstrap_js_bottom %}
     {{ super() }}
+    <script src="/static/jquery.tools.min.js"></script>
 
     {{ btn.make_button_js() }}
     {{ modals.make_forward_dialog_js() }}
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('table a.tooltip-anchor').tooltip({
+                effect: 'slide'
+            });
+        });
+    </script>
+
 {% endblock %}

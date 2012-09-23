@@ -140,7 +140,7 @@ class Paper(db.Model):
                            self.dispatched_entities)
         self.statistics = '''<span style="text-align: center;">
         <strong style="margin-right: 7px;">%s</strong>/
-        <strong style="margin-right: 7px; color: orange;">%s</strong>/
+        <strong style="margin-right: 7px; color: dodgerblue;">%s</strong>/
         <strong style="margin-right: 7px; color: green;">%s</strong>
         </span></a>''' % (
             len(self.forwarded),
