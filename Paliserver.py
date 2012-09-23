@@ -4,7 +4,7 @@
 # Parc Ain't Robust Client
 from datetime import date
 from flask import session, request, redirect, url_for, flash, jsonify, send_from_directory
-from flask.ext.uploads import UploadNotAllowed, extension
+from flask.ext.uploads import UploadNotAllowed, extension, os
 from flask.templating import render_template
 from sqlalchemy.exc import IntegrityError
 from palis import app, db, paper_uploader
@@ -240,7 +240,7 @@ def download_paper():
     paper_id = request.args['paper_id']
     app.logger.info(Paper.query.filter_by(_id=paper_id).first().filename)
 
-    return send_from_directory(app.instance_path + r'\papers', Paper.query.filter_by(_id=paper_id).first().filename)
+    return send_from_directory(os.path.join(app.instance_path, 'papers'), Paper.query.filter_by(_id=paper_id).first().filename)
 
 
 @app.route('/withdraw', methods=['POST'])

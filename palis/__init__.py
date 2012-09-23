@@ -1,6 +1,6 @@
 from flask import Flask
 from flask.ext.sqlalchemy import SQLAlchemy
-from flask.ext.uploads import UploadSet, DOCUMENTS, TEXT, configure_uploads
+from flask.ext.uploads import UploadSet, DOCUMENTS, TEXT, configure_uploads, os
 from flask_bootstrap import Bootstrap
 
 app = Flask(__name__)
@@ -15,7 +15,7 @@ db = SQLAlchemy(app)
 Bootstrap(app)
 
 paper_uploader = UploadSet('papers', TEXT + DOCUMENTS + (u'pdf',),
-                           default_dest=lambda app: app.instance_path + r'\papers')
+                           default_dest=lambda app: os.path.join(app.instance_path, 'papers'))
 configure_uploads(app, (paper_uploader,))
 
 
