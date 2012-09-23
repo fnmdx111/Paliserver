@@ -3,6 +3,23 @@ Paliserver
 
 Pa(per)li(st)server = Paliserver
 
+How to deploy
+-------------
+
+1. Make sure you have Python 2.7 and pip installed and PATH configured,
+   if you don't see this [article](http://www.pip-installer.org/en/latest/installing.html), and then
+   install all the dependencies listed in section Dependencies using `pip install _dependency_`;
+
+2. Download the source as zip file and extract it into the location you desire,
+   or if you have git installed you can `git clone https://github.com/mad4alcohol/Paliserver.git`;
+
+3. `cd` into the directory in which you have put the source files, run `python db_init_bootstrap.py`
+   to initialize a database with user `admin` and user `test_user` created,
+   both with the password `123456`;
+
+4. Change the `5000` in `server.py` to the desired port number, then run `python server.py`;
+
+5. Visit `your.ip.address:your_port` and see if `Hello world.` is echoed.
 
 Dependencies
 ------------
@@ -17,8 +34,14 @@ Dependencies
 
 * flask-uploads
 
+* tornado
+
 Log
 ---
+
+*   2012/9/23T2109 - 0.0.c
+
+    this project now can easily be deployed
 
 *   2012/9/23T1403 - 0.0.b
 
@@ -73,11 +96,7 @@ Log
 TODO
 ----
 
-*   fix footer blocking bottom rows of the table
-
-*   fix bugs in upload interface
-
-*   add a link to `Fwd/Rdg/Rd` to launch a modal which shows who are currently reading this very paper now
+There is no TODOs currently.
 
 
 licensed under lgpl
