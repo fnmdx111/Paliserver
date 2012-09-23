@@ -7,19 +7,19 @@ How to deploy
 -------------
 
 1. Make sure you have Python 2.7 and pip installed and PATH configured,
-   if you don't see this [article](http://www.pip-installer.org/en/latest/installing.html), and then
-   install all the dependencies listed in section Dependencies using `pip install _dependency_`;
+   if you don't, see this [article](http://www.pip-installer.org/en/latest/installing.html), and then
+   install all the dependencies listed in section Dependencies by using `pip install dependency`
 
-2. Download the source as zip file and extract it into the location you desire,
-   or if you have git installed you can `git clone https://github.com/mad4alcohol/Paliserver.git`;
+2. Download the source as zip file and extract it into the desired location,
+   or if you have git installed you can `git clone https://github.com/mad4alcohol/Paliserver.git`
 
-3. `cd` into the directory in which you have put the source files, run `python db_init_bootstrap.py`
+3. `cd` into the directory in which you have put the source, run `python db_init_bootstrap.py`
    to initialize a database with user `admin` and user `test_user` created,
-   both with the password `123456`;
+   both with the password `123456`
 
-4. Change the `5000` in `server.py` to the desired port number, then run `python server.py`;
+4. Run `python server.py`
 
-5. Visit `your.ip.address:your_port` and see if `Hello world.` is echoed.
+5. Visit `your.i.p.address:5000` and see if `Hello world.` is displayed
 
 Dependencies
 ------------
