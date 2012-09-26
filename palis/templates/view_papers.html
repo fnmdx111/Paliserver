@@ -168,6 +168,9 @@
                                                         {{ modals.make_forward_dialog_button(
                                                             paper._id, cur_uid, 'my-forward-dialog'
                                                         ) }}
+                                                        {{ btn.make_button('<i class="icon-remove"></i> '|safe,
+                                                                           'delete_paper', 'btn-danger',
+                                                                           paper._id, id_name="'paper_id'") }}
                                                     </div>
                                                 </div>
                                             </td>
