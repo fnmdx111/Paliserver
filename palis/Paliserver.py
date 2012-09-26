@@ -9,7 +9,7 @@ from flask.templating import render_template
 from sqlalchemy.exc import IntegrityError
 from palis import app, db, paper_uploader
 from palis.forms import LoginForm, ForwardForm, UploadForm, RegistrationForm
-from palis.misc import gen_filename
+from palis.misc import gen_filename, need_login, sorted_paper_by_date, sorted_user_by_name, sorted_dispatch_by_date
 from palis.models import User, PaperDispatchEntity, Paper
 
 state = {'agent': ''}
@@ -27,9 +27,11 @@ def init_current_user(_=None):
     username = session.get('username', None)
     if username:
         user = User.query.filter_by(username=username).first()
-        app.jinja_env.globals.update(cur_uid=user._id, cur_username=username)
-    else:
-        app.jinja_env.globals.update(cur_uid=None, cur_username=None)
+        if user:
+            app.jinja_env.globals.update(cur_uid=user._id, cur_username=username)
+            return
+
+    app.jinja_env.globals.update(cur_uid=None, cur_username=None)
 
 
 @app.route('/')
@@ -37,13 +39,10 @@ def index():
     return render_template('index.html')
 
 
+@need_login(as_admin=True)
 @app.route('/admin', defaults={'active': 'users'})
 @app.route('/admin/active/<active>', methods=['GET', 'POST'])
 def admin(active):
-    if 'username' not in session or session['username'] != 'admin':
-        flash('You are not authorized.')
-        return redirect(url_for('login'))
-
     form = RegistrationForm(request.form)
     success, error = '', ''
     if request.method == 'POST' and form.validate_on_submit():
@@ -67,7 +66,7 @@ def admin(active):
                            form=form,
                            success=success,
                            error=error,
-                           users=users,
+                           users=sorted_user_by_name(users),
                            active=active)
 
 
@@ -84,6 +83,8 @@ def login():
     if request.method == 'POST' and form.validate_on_submit():
         logout()
         session['username'] = form.user.username
+        session.permanent = False
+
         app.logger.info('user %s logged in' % session['username'])
 
         if 'Palient/0.0.a' in request.user_agent.string:
@@ -100,12 +101,10 @@ def login():
                            login_active=True)
 
 
+@need_login
 @app.route('/user', defaults={'active': 'from'})
 @app.route('/user/active/<active>')
 def show_list(active):
-    if 'username' not in session:
-        return redirect(url_for('login'))
-
     user = User.query.filter_by(username=session['username']).first()
     for entity in user.papers + user.dispatches:
         entity.force_status_str()
@@ -116,10 +115,8 @@ def show_list(active):
                                                             User.query.filter_by(username='admin').first()._id)]
 
     return render_template('papers.html',
-                           pd_entities_to=sorted(user.papers,
-                                                 cmp=lambda x, y: cmp(x.dispatch_date, y.dispatch_date),
-                                                 reverse=True),
-                           pd_entities_from=user.dispatches,
+                           pd_entities_to=sorted_dispatch_by_date(user.papers),
+                           pd_entities_from=sorted_dispatch_by_date(user.dispatches),
                            forward_form=forward_form,
                            show_list_active=True,
                            active=active)
@@ -144,8 +141,8 @@ def view_papers():
         paper.force_statistics_data()
 
     return render_template('view_papers.html',
-                           paper_all=all_papers,
-                           paper_my=my_papers,
+                           paper_all=sorted_paper_by_date(all_papers),
+                           paper_my=sorted_paper_by_date(my_papers),
                            forward_form=forward_form,
                            view_papers_active=True,
                            logged_in=forward_form) # if logged in, form is always True
@@ -167,11 +164,9 @@ def read_paper():
     return redirect(url_for('show_list'))
 
 
+@need_login
 @app.route('/forward', methods=['POST'])
 def forward_paper():
-    if 'username' not in session:
-        return redirect(url_for('login'))
-
     for user_id in request.form['selected_uid'].split(',')[:-1]:
         new_pde = PaperDispatchEntity(request.form['from_uid'],
                                       user_id,
@@ -202,11 +197,9 @@ def validate_paper():
     return jsonify(result='proceed')
 
 
+@need_login
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_paper():
-    if 'username' not in session:
-        return redirect(url_for('login'))
-
     form = UploadForm(form=request.form)
 
     if request.method == 'POST' and 'paper' in request.files:
@@ -240,7 +233,9 @@ def download_paper():
     paper_id = request.args['paper_id']
     app.logger.info(Paper.query.filter_by(_id=paper_id).first().filename)
 
-    return send_from_directory(os.path.join(app.instance_path, 'papers'), Paper.query.filter_by(_id=paper_id).first().filename)
+    return send_from_directory(os.path.join(app.instance_path, 'papers'),
+                               Paper.query.filter_by(_id=paper_id).first().filename,
+                               as_attachment=True)
 
 
 @app.route('/withdraw', methods=['POST'])
@@ -259,12 +254,9 @@ def withdraw_dispatch():
     return redirect(url_for('show_list', active='to' if status != 'refuse' else 'from'))
 
 
+@need_login
 @app.route('/delete', methods=['POST'])
 def delete_paper():
-    if 'username' not in session:
-        flash('You are not authorized.')
-        return redirect(url_for('login'))
-
     paper = Paper.query.filter_by(_id=request.form['paper_id']).first()
     for pde in paper.dispatched_entities:
         db.session.delete(pde)
@@ -275,12 +267,9 @@ def delete_paper():
     return redirect(url_for('view_papers'))
 
 
+@need_login(as_admin=True)
 @app.route('/delete_user', methods=['POST'])
 def delete_user():
-    if 'username' not in session or session['username'] != 'admin':
-        flash('You are not authorized.')
-        return redirect(url_for('login'))
-
     user = User.query.filter_by(_id=request.form['user_id']).first()
     for pde in user.papers:
         db.session.delete(pde)
@@ -316,5 +305,6 @@ def logout():
 
 
 if __name__ == '__main__':
+    app.debug = True
     app.run(host='0.0.0.0')
 
