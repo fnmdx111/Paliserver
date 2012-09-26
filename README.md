@@ -39,6 +39,14 @@ Dependencies
 Log
 ---
 
+*   2012/9/26T1452 - 0.0.d
+
+    bug fixed and code refactored
+
+    added remove button for uploaders
+
+    sessions are not alive for 31d now, they will be killed after users close their browsers
+
 *   2012/9/23T2109 - 0.0.c
 
     this project now can easily be deployed
