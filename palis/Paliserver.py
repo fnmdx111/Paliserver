@@ -1,22 +1,19 @@
 # encoding: utf-8
 
-# Pars Ain't Robust Server
-# Parc Ain't Robust Client
 from datetime import date
 from flask import session, request, redirect, url_for, flash, jsonify, send_from_directory
 from flask.ext.uploads import UploadNotAllowed, extension, os
 from flask.templating import render_template
 from sqlalchemy.exc import IntegrityError
-from palis import app, db, paper_uploader
+from palis import app, db, paper_uploader, PATH_ENCODING
 from palis.forms import LoginForm, ForwardForm, UploadForm, RegistrationForm
 from palis.misc import gen_filename, need_login, sorted_paper_by_date, sorted_user_by_name, sorted_dispatch_by_date
 from palis.models import User, PaperDispatchEntity, Paper
 
-state = {'agent': ''}
-
 
 @app.before_first_request
 def init_db(_=None):
+    """initialize the users by querying the user table"""
     db.create_all()
 
     app.jinja_env.globals.update(user_list=User.query.all())
@@ -24,10 +21,13 @@ def init_db(_=None):
 
 @app.before_request
 def init_current_user(_=None):
+    """get current user object by the username stored in session"""
     username = session.get('username', None)
     if username:
         user = User.query.filter_by(username=username).first()
-        if user:
+        if user: # note that a user maybe deleted after he's logged in,
+        # when this happens, username may still be in session,
+        # but it's critical to test the user object's nullity
             app.jinja_env.globals.update(cur_uid=user._id, cur_username=username)
             return
 
@@ -36,6 +36,7 @@ def init_current_user(_=None):
 
 @app.route('/')
 def index():
+    """render function for index page"""
     return render_template('index.html')
 
 
@@ -43,8 +44,10 @@ def index():
 @app.route('/admin', defaults={'active': 'users'})
 @app.route('/admin/active/<active>', methods=['GET', 'POST'])
 def admin(active):
+    """render function for administration page"""
     form = RegistrationForm(request.form)
     success, error = '', ''
+
     if request.method == 'POST' and form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
         if not user:
@@ -72,6 +75,7 @@ def admin(active):
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    """render function for login page"""
     form = LoginForm(request.form)
 
     if 'username' in session and request.method != 'POST':
@@ -84,13 +88,6 @@ def login():
         logout()
         session['username'] = form.user.username
         session.permanent = False
-
-        app.logger.info('user %s logged in' % session['username'])
-
-        if 'Palient/0.0.a' in request.user_agent.string:
-            state['agent'] = 'palient'
-        else:
-            state['agent'] = request.user_agent.browser
 
         flash('you were successfully logged in')
         return redirect(url_for('show_list'))
@@ -105,6 +102,7 @@ def login():
 @app.route('/user', defaults={'active': 'from'})
 @app.route('/user/active/<active>')
 def show_list(active):
+    """render function for dispatch listing page"""
     user = User.query.filter_by(username=session['username']).first()
     for entity in user.papers + user.dispatches:
         entity.force_status_str()
@@ -124,6 +122,7 @@ def show_list(active):
 
 @app.route('/papers')
 def view_papers():
+    """render function for papers viewing page"""
     if 'username' in session:
         user = User.query.filter_by(username=session['username']).first()
         my_papers = user.uploaded_papers
@@ -151,6 +150,7 @@ def view_papers():
 
 @app.route('/read', methods=['POST'])
 def read_paper():
+    """response function for paper status marking action"""
     pde_id = request.form['pde_id']
     pde = PaperDispatchEntity.query.filter_by(_id=pde_id).first()
 
@@ -167,6 +167,7 @@ def read_paper():
 @need_login
 @app.route('/forward', methods=['POST'])
 def forward_paper():
+    """response function for paper forwarding action"""
     for user_id in request.form['selected_uid'].split(',')[:-1]:
         new_pde = PaperDispatchEntity(request.form['from_uid'],
                                       user_id,
@@ -187,6 +188,7 @@ def forward_paper():
 
 @app.route('/validate_paper', methods=['GET'])
 def validate_paper():
+    """response function for paper validation requesting action"""
     title = request.args.get('title', '', type=unicode)
     author = request.args.get('author', '', type=unicode)
 
@@ -200,6 +202,7 @@ def validate_paper():
 @need_login
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_paper():
+    """response function for paper uploading action"""
     form = UploadForm(form=request.form)
 
     if request.method == 'POST' and 'paper' in request.files:
@@ -230,16 +233,21 @@ def upload_paper():
 
 @app.route('/download', methods=['GET'])
 def download_paper():
+    """response function for paper downloading action"""
     paper_id = request.args['paper_id']
     app.logger.info(Paper.query.filter_by(_id=paper_id).first().filename)
 
+    # note that the encoding of the paths differs in windows and linux,
+    # and everything retrieved from database are unicode,
+    # and http doesn't care for unicode
     return send_from_directory(os.path.join(app.instance_path, 'papers'),
-                               Paper.query.filter_by(_id=paper_id).first().filename,
+                               Paper.query.filter_by(_id=paper_id).first().filename.encode(PATH_ENCODING),
                                as_attachment=True)
 
 
 @app.route('/withdraw', methods=['POST'])
 def withdraw_dispatch():
+    """response function for dispatch withdraw action"""
     pde_id = request.form['pde_id']
     pde = PaperDispatchEntity.query.filter_by(_id=pde_id).first()
 
@@ -257,6 +265,7 @@ def withdraw_dispatch():
 @need_login
 @app.route('/delete', methods=['POST'])
 def delete_paper():
+    """response function for paper deleting action"""
     paper = Paper.query.filter_by(_id=request.form['paper_id']).first()
     for pde in paper.dispatched_entities:
         db.session.delete(pde)
@@ -270,6 +279,7 @@ def delete_paper():
 @need_login(as_admin=True)
 @app.route('/delete_user', methods=['POST'])
 def delete_user():
+    """response function for user deleting action"""
     user = User.query.filter_by(_id=request.form['user_id']).first()
     for pde in user.papers:
         db.session.delete(pde)
@@ -281,6 +291,7 @@ def delete_user():
 
 @app.route('/redispatch', methods=['POST'])
 def redispatch():
+    """response function for redispatching action"""
     pde = PaperDispatchEntity.query.filter_by(_id=request.form['pde_id']).first()
     pde.status = 0x1
     pde.forward_status = 0x0
@@ -293,6 +304,7 @@ def redispatch():
 
 @app.route('/logout')
 def logout():
+    """response function for logging out action"""
     if not session.get('username', None):
         return redirect(url_for('index'))
 
