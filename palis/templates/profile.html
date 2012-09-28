@@ -6,13 +6,9 @@
     {{ super() }}
 
     <div class="container">
-        <div>
-            {% if cur_username %}
-              <div class="hero-unit"><p class="">Hello {{ cur_username }}.</p></div>
-            {% else %}
-              <div class="hero-unit"><p class="">Hello world!</p></div>
-            {% endif %}
-        </div>
+        {% if not cur_username %}
+            <div class="hero-unit"><p class="">Hello world!</p></div>
+        {% endif %}
         {% if cur_username and form %}
             <div class="container">
                 {% if error %}
