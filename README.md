@@ -39,6 +39,10 @@ Dependencies
 Log
 ---
 
+*   2012/9/28T1547 - 0.0.e
+
+    buf fixed and code refactored
+
 *   2012/9/26T1452 - 0.0.d
 
     bug fixed and code refactored
