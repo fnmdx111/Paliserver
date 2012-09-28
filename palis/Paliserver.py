@@ -6,7 +6,7 @@ from flask.ext.uploads import UploadNotAllowed, extension, os
 from flask.templating import render_template
 from sqlalchemy.exc import IntegrityError
 from palis import app, db, paper_uploader, PATH_ENCODING
-from palis.forms import LoginForm, ForwardForm, UploadForm, RegistrationForm
+from palis.forms import LoginForm, ForwardForm, UploadForm, RegistrationForm, ResetPasswordForm
 from palis.misc import gen_filename, need_login, sorted_paper_by_date, sorted_user_by_name, sorted_dispatch_by_date
 from palis.models import User, PaperDispatchEntity, Paper
 
@@ -37,7 +37,9 @@ def init_current_user(_=None):
 @app.route('/')
 def index():
     """render function for index page"""
-    return render_template('index.html')
+    form = ResetPasswordForm(request.form)
+
+    return render_template('index.html', form=form)
 
 
 @need_login(as_admin=True)
@@ -71,6 +73,32 @@ def admin(active):
                            error=error,
                            users=sorted_user_by_name(users),
                            active=active)
+
+
+@need_login
+@app.route('/change_pwd', methods=['POST'])
+def change_pwd():
+    """response function for password changing action"""
+    form = ResetPasswordForm(request.form)
+    success, error = '', ''
+
+    if request.method == 'POST' and form.validate_on_submit():
+        user = User.query.filter_by(_id=request.form['uid']).first()
+        if user:
+            if user.username == session['username']:
+            # session must have `username', this is guaranteed by `need_login' decorator
+                user.password = form.password.data
+                db.session.commit()
+                success = 'Password modified successfully'
+            else:
+                error = 'Mind your own business, will you?'
+        else:
+            error = 'You don\'t even exist :('
+
+    return render_template('index.html',
+                           form=form,
+                           success=success,
+                           error=error)
 
 
 @app.route('/login', methods=['GET', 'POST'])

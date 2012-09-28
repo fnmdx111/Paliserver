@@ -1,6 +1,5 @@
 from flask.ext.wtf import Form, FileField
 from wtforms import TextField, validators, PasswordField, SelectMultipleField, widgets
-from palis import app
 from palis.models import User, Paper
 
 class LoginForm(Form, object):
@@ -72,11 +71,20 @@ class UploadForm(Form, object):
         return True
 
 
+
+class ResetPasswordForm(Form, object):
+    password = PasswordField('Password', validators=[validators.Required(),
+                                                     validators.EqualTo('confirm',
+                                                                        message='passwords must match')])
+    confirm = PasswordField('Again', validators=[validators.Required()])
+
+
 class RegistrationForm(Form, object):
     username = TextField('Username', validators=[validators.Required()])
     password = PasswordField('Password', validators=[validators.Required(),
                                                      validators.EqualTo('confirm',
                                                                         message='passwords must match')])
     confirm = PasswordField('Again', validators=[validators.Required()])
+
 
 
