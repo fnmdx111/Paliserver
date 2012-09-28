@@ -7,7 +7,7 @@ from flask.templating import render_template
 from sqlalchemy.exc import IntegrityError
 from palis import app, db, paper_uploader, PATH_ENCODING
 from palis.forms import LoginForm, ForwardForm, UploadForm, RegistrationForm, ResetPasswordForm
-from palis.misc import gen_filename, need_login, sorted_paper_by_date, sorted_user_by_name, sorted_dispatch_by_date
+from palis.misc import gen_filename, sorted_paper_by_date, sorted_user_by_name, sorted_dispatch_by_date, requires_roles
 from palis.models import User, PaperDispatchEntity, Paper
 
 
@@ -34,17 +34,17 @@ def init_current_user(_=None):
     app.jinja_env.globals.update(cur_uid=None, cur_username=None)
 
 
-@app.route('/')
-def index():
+@app.route('/profile')
+def profile():
     """render function for index page"""
     form = ResetPasswordForm(request.form)
 
-    return render_template('index.html', form=form)
+    return render_template('profile.html', form=form)
 
 
-@need_login(as_admin=True)
 @app.route('/admin', defaults={'active': 'users'})
 @app.route('/admin/active/<active>', methods=['GET', 'POST'])
+@requires_roles('admin')
 def admin(active):
     """render function for administration page"""
     form = RegistrationForm(request.form)
@@ -75,8 +75,8 @@ def admin(active):
                            active=active)
 
 
-@need_login
 @app.route('/change_pwd', methods=['POST'])
+@requires_roles('user')
 def change_pwd():
     """response function for password changing action"""
     form = ResetPasswordForm(request.form)
@@ -95,7 +95,7 @@ def change_pwd():
         else:
             error = 'You don\'t even exist :('
 
-    return render_template('index.html',
+    return render_template('profile.html',
                            form=form,
                            success=success,
                            error=error)
@@ -126,9 +126,10 @@ def login():
                            login_active=True)
 
 
-@need_login
+@app.route('/', defaults={'active': 'from'})
 @app.route('/user', defaults={'active': 'from'})
 @app.route('/user/active/<active>')
+@requires_roles('user')
 def show_list(active):
     """render function for dispatch listing page"""
     user = User.query.filter_by(username=session['username']).first()
@@ -192,8 +193,8 @@ def read_paper():
     return redirect(url_for('show_list'))
 
 
-@need_login
 @app.route('/forward', methods=['POST'])
+@requires_roles('user')
 def forward_paper():
     """response function for paper forwarding action"""
     for user_id in request.form['selected_uid'].split(',')[:-1]:
@@ -227,8 +228,8 @@ def validate_paper():
     return jsonify(result='proceed')
 
 
-@need_login
 @app.route('/upload', methods=['GET', 'POST'])
+@requires_roles('user')
 def upload_paper():
     """response function for paper uploading action"""
     form = UploadForm(form=request.form)
@@ -290,8 +291,8 @@ def withdraw_dispatch():
     return redirect(url_for('show_list', active='to' if status != 'refuse' else 'from'))
 
 
-@need_login
 @app.route('/delete', methods=['POST'])
+@requires_roles('user')
 def delete_paper():
     """response function for paper deleting action"""
     paper = Paper.query.filter_by(_id=request.form['paper_id']).first()
@@ -304,8 +305,8 @@ def delete_paper():
     return redirect(url_for('view_papers'))
 
 
-@need_login(as_admin=True)
 @app.route('/delete_user', methods=['POST'])
+@requires_roles('admin')
 def delete_user():
     """response function for user deleting action"""
     user = User.query.filter_by(_id=request.form['user_id']).first()
@@ -334,13 +335,13 @@ def redispatch():
 def logout():
     """response function for logging out action"""
     if not session.get('username', None):
-        return redirect(url_for('index'))
+        return redirect(url_for('profile'))
 
     app.logger.info('user %s logged out' % session['username'])
 
     session.pop('username', None)
 
-    return redirect(url_for('index'))
+    return redirect(url_for('profile'))
 
 
 
