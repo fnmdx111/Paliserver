@@ -48,6 +48,7 @@ sorted_user_by_name = partial(_sorted, attr='username', reverse=False)
 
 
 if __name__ == '__main__':
+    print sorted_paper_by_date(None)
     print sorted_dispatch_by_date(PaperDispatchEntity.query.all())
     print sorted_user_by_name(User.query.all())
 
