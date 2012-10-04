@@ -19,7 +19,7 @@
                 <a class="brand" href="{% if cur_username == 'admin' -%}
                     {{ url_for('admin') }}
                 {%- else -%}
-                    {{ url_for('index') }}
+                    {{ url_for('profile') }}
                 {%- endif %}">
                     <i class="icon-book icon-white"></i> {% if cur_username %}
                                                             {{ cur_username }}

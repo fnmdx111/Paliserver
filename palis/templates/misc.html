@@ -1,0 +1,7 @@
+{% macro make_alert(_id, text, class="alert-error", hide="hide") -%}
+    <div id="{{ _id }}" class="alert {{ class }} fade in {{ hide }}" data-alert="alert">
+        <button type="button" class="close" data-dismiss="alert">x</button>
+        {{ text }}
+    </div>
+{%- endmacro %}
+

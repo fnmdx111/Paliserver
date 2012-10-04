@@ -1,4 +1,4 @@
-from functools import partial
+from functools import partial, wraps
 from flask import session, flash, redirect, url_for
 from palis.models import PaperDispatchEntity, User
 
@@ -10,18 +10,21 @@ def gen_filename(paper, author):
     return '-'.join((paper, author))
 
 
-def need_login(as_admin=False):
-    def wrapper(func):
-        def _f(*args, **kwargs):
+def requires_roles(*roles):
+    def wrapper(f):
+        @wraps(f)
+        def wrapped(*args, **kwargs):
             if 'username' not in session:
                 flash('You are not logged in')
                 return redirect(url_for('login'))
-            if as_admin:
+            if 'user' in roles: # this if stmt is a stub
+                pass
+            if 'admin' in roles:
                 if session['username'] != 'admin':
                     flash('You are not authorized')
                     return redirect(url_for('login'))
-            return func(*args, **kwargs)
-        return _f
+            return f(*args, **kwargs)
+        return wrapped
     return wrapper
 
 
