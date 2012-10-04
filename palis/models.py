@@ -111,7 +111,8 @@ class Paper(db.Model):
     author = db.Column(db.String)
     title = db.Column(db.String)
 
-    filename = db.Column(db.String, unique=True)
+    filename = db.Column(db.String)
+    url = db.Column(db.String, unique=True)
     upload_date = db.Column(db.Date)
     uploader_id = db.Column(db.Integer, db.ForeignKey('user._id'))
     uploader = db.relationship('User',
@@ -122,11 +123,12 @@ class Paper(db.Model):
                                           'title',
                                           name='paper_unique_constraint'),)
 
-    def __init__(self, author, title, filename, upload_date, uploader_id):
+    def __init__(self, author, title, filename, url, upload_date, uploader_id):
         self.author = author
         self.title = title
 
         self.filename = filename
+        self.url = url
         self.upload_date = upload_date
         self.uploader_id = uploader_id
 
@@ -150,10 +152,11 @@ class Paper(db.Model):
 
 
     def __repr__(self):
-        return '''<Paper('%s', '%s', '%s', '%s', '%s')>''' % (self.author,
+        return '''<Paper('%s', '%s', '%s', '%s', '%s')>\nurl: '%s' ''' % (self.author,
                                                               self.title,
                                                               self.filename,
                                                               self.upload_date,
-                                                              self.uploader_id)
+                                                              self.uploader_id,
+                                                              self.url)
 
 
