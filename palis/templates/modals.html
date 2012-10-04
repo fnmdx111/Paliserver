@@ -81,11 +81,15 @@
         var post_form = function (form_id, _id, from_uid_) {
             var result = '';
             var users_checkboxes = document.getElementById(form_id).users_selected;
-            for (var i = 0; i < users_checkboxes.length; i++) {
+            var res_array = [];
+            for (var i = 0; i < users_checkboxes.length - 1; i++) {
                 if (users_checkboxes[i].checked) {
+                    res_array.push(users_checkboxes[i].value);
                     result += users_checkboxes[i].value + ",";
                 }
             }
+            result = res_array.join(',');
+
             $.post('{{ url_for('forward_paper') }}', {
                 selected_uid: result,
                 paper_id: _id,

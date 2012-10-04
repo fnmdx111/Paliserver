@@ -23,6 +23,9 @@ def requires_roles(*roles):
                 if session['username'] != 'admin':
                     flash('You are not authorized')
                     return redirect(url_for('login'))
+            if not User.query.filter_by(username=session['username']).first():
+                flash('Error occurred, please contact administrator')
+                return redirect(url_for('login'))
             return f(*args, **kwargs)
         return wrapped
     return wrapper
