@@ -234,7 +234,7 @@ def upload_paper():
     """response function for paper uploading action"""
     form = UploadForm(form=request.form)
 
-    if request.method == 'POST':
+    if request.method == 'POST' and form.validate_on_submit():
         filename, url = '', ''
 
         if 'paper' in request.files and request.files['paper'].filename:
