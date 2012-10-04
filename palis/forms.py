@@ -46,6 +46,7 @@ class UploadForm(Form, object):
     title = TextField(u'Title', validators=[validators.Required()])
     author = TextField(u'Author', validators=[validators.Required()])
     paper = FileField(u'Paper')
+    url = TextField(u'URL', validators=[validators.URL()])
 
     def __init__(self, **kwargs):
         super(UploadForm, self).__init__(**kwargs)
@@ -67,6 +68,11 @@ class UploadForm(Form, object):
                                       title=self.title.data).first()
         if paper:
             return False
+
+        if self.paper.data:
+            if self.url.data:
+                self.paper.errors.append(u'paper and url are mutually exclusive')
+                return False
 
         return True
 
