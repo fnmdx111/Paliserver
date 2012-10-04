@@ -28,6 +28,10 @@
             {{ wtf.form_errors(form, "only") }}
             {{ wtf.horizontal_field(form.title) }}
             {{ wtf.horizontal_field(form.author) }}
+            <p style="margin-left: 102px; margin-bottom: 20px;">
+                <b>Note that</b> Paper and URL are <span style="color: red; ">mutually exclusive</span>,
+                please input only either of them.
+            </p>
             {{ wtf.horizontal_field(form.paper) }}
             {{ wtf.horizontal_field(form.url) }}
             <div class="form-actions">
