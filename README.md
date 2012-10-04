@@ -39,9 +39,13 @@ Dependencies
 Log
 ---
 
+*   2012/10/4T1539 - 0.0.f
+
+    papers can have url instead of (real) documents now
+
 *   2012/9/28T1547 - 0.0.e
 
-    buf fixed and code refactored
+    bug fixed and code refactored
 
 *   2012/9/26T1452 - 0.0.d
 

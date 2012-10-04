@@ -152,7 +152,7 @@ def show_list(active):
 @app.route('/papers')
 def view_papers():
     """render function for papers viewing page"""
-    if 'username' in session:
+    if 'username' in session and User.query.filter_by(username=session['username']).first():
         user = User.query.filter_by(username=session['username']).first()
         my_papers = user.uploaded_papers
 
@@ -197,7 +197,7 @@ def read_paper():
 @requires_roles('user')
 def forward_paper():
     """response function for paper forwarding action"""
-    for user_id in request.form['selected_uid'].split(',')[:-1]:
+    for user_id in request.form['selected_uid'].split(','):
         new_pde = PaperDispatchEntity(request.form['from_uid'],
                                       user_id,
                                       request.form['paper_id'],
@@ -234,22 +234,31 @@ def upload_paper():
     """response function for paper uploading action"""
     form = UploadForm(form=request.form)
 
-    if request.method == 'POST' and 'paper' in request.files:
-        try:
-            filename = gen_filename(form.title.data, form.author.data) + '.' + extension(request.files['paper'].filename)
-            paper_uploader.save(request.files['paper'], name=filename)
-        except UploadNotAllowed:
-            return render_template('upload.html',
-                                   error='Please select file to upload.',
-                                   form=form, upload_paper_active=True)
+    if request.method == 'POST':
+        filename, url = '', ''
 
-        paper = Paper(form.author.data, form.title.data, filename, date.today(),
+        if 'paper' in request.files and request.files['paper'].filename:
+            app.logger.info(request.files['paper'].filename)
+            try:
+                filename = gen_filename(form.title.data, form.author.data) +\
+                                        '.' +\
+                                        extension(request.files['paper'].filename)
+                paper_uploader.save(request.files['paper'], name=filename)
+            except UploadNotAllowed:
+                return render_template('upload.html',
+                                       error='Please select file to upload.',
+                                       form=form, upload_paper_active=True)
+        else:
+            url = form.url.data
+
+        paper = Paper(form.author.data, form.title.data, filename, url, date.today(),
                       User.query.filter_by(username=session['username']).first()._id)
         db.session.add(paper)
         try:
             db.session.commit()
         except IntegrityError:
-            db.session.delete(paper)
+            db.session.rollback()
+            # db.session.delete(paper)
             return render_template('upload.html', error='Filename already exists.', form=form,
                                    upload_paper_active=True)
 
@@ -264,14 +273,20 @@ def upload_paper():
 def download_paper():
     """response function for paper downloading action"""
     paper_id = request.args['paper_id']
-    app.logger.info(Paper.query.filter_by(_id=paper_id).first().filename)
+    paper = Paper.query.filter_by(_id=paper_id).first()
 
-    # note that the encoding of the paths differs in windows and linux,
-    # and everything retrieved from database are unicode,
-    # and http doesn't care for unicode
-    return send_from_directory(os.path.join(app.instance_path, 'papers'),
-                               Paper.query.filter_by(_id=paper_id).first().filename.encode(PATH_ENCODING),
-                               as_attachment=True)
+    if not paper.filename:
+        return redirect(paper.url)
+    else:
+
+        app.logger.info(Paper.query.filter_by(_id=paper_id).first().filename)
+
+        # note that the encoding of the paths differs in windows and linux,
+        # and everything retrieved from database are unicode,
+        # and http doesn't care for unicode
+        return send_from_directory(os.path.join(app.instance_path, 'papers'),
+                                   Paper.query.filter_by(_id=paper_id).first().filename.encode(PATH_ENCODING),
+                                   as_attachment=True)
 
 
 @app.route('/withdraw', methods=['POST'])
