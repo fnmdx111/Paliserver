@@ -126,7 +126,7 @@
                                         {% if logged_in %}
                                             <div class="pull-right">
                                                 <div class="btn-group">
-                                                    {{ btn.make_button('<i class="icon-download-alt"></i> '|safe,
+                                                    {{ btn.make_button(btn.make_download_icon(paper.url)|safe,
                                                                        'download_paper', '',
                                                                        paper._id, [], "'get'", "'paper_id'") }}
                                                     {{ modals.make_forward_dialog_button(
@@ -162,7 +162,7 @@
                                             <td>
                                                 <div class="pull-right">
                                                     <div class="btn-group">
-                                                        {{ btn.make_button('<i class="icon-download-alt"></i> '|safe,
+                                                        {{ btn.make_button(btn.make_download_icon(paper.url)|safe,
                                                                            'download_paper', '',
                                                                            paper._id, [], "'get'", "'paper_id'") }}
                                                         {{ modals.make_forward_dialog_button(

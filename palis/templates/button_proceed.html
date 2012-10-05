@@ -5,6 +5,14 @@
     </button>
 {%- endmacro %}
 
+{% macro make_download_icon(url) -%}
+    {% if url %}
+        <i class="icon-arrow-right"></i>
+    {% else %}
+        <i class="icon-download-alt"></i>
+    {% endif %}
+{%- endmacro %}
+
 {% macro make_button_js() -%}
     <script type="text/javascript">
         var proceed = function (_id, action, additional_fields, method, id_name) {

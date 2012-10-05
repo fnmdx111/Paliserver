@@ -96,7 +96,7 @@
                                                         {{ btn.make_button(read_btn_text, 'read_paper',
                                                                            read_btn_class, pd_entity._id) }}
                                                         {% endif %}
-                                                        {{ btn.make_button('<i class="icon-download-alt"></i> '|safe,
+                                                        {{ btn.make_button(btn.make_download_icon(pd_entity.paper.url)|safe,
                                                                            'download_paper',
                                                                            '', pd_entity.paper._id, [],
                                                                            "'get'", "'paper_id'") }}
