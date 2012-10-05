@@ -1,6 +1,7 @@
 # encoding: utf-8
 
 from datetime import date
+import urllib2
 from flask import session, request, redirect, url_for, flash, jsonify, send_from_directory
 from flask.ext.uploads import UploadNotAllowed, extension, os
 from flask.templating import render_template
@@ -238,7 +239,6 @@ def upload_paper():
         filename, url = '', ''
 
         if 'paper' in request.files and request.files['paper'].filename:
-            app.logger.info(request.files['paper'].filename)
             try:
                 filename = gen_filename(form.title.data, form.author.data) +\
                                         '.' +\
@@ -276,11 +276,8 @@ def download_paper():
     paper = Paper.query.filter_by(_id=paper_id).first()
 
     if not paper.filename:
-        return redirect(paper.url)
+        return redirect(urllib2.unquote(paper.url))
     else:
-
-        app.logger.info(Paper.query.filter_by(_id=paper_id).first().filename)
-
         # note that the encoding of the paths differs in windows and linux,
         # and everything retrieved from database are unicode,
         # and http doesn't care for unicode
