@@ -53,8 +53,7 @@ class UploadForm(Form, object):
 
 
     def validate(self):
-        request_valid = Form.validate(self)
-        if not request_valid:
+        if self.url.data and not self.url.validate(self):
             return False
 
         if not self.title.data:
