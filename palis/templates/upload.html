@@ -72,6 +72,8 @@
                         } else {
                             if (url.val()) {
                                 form.remove('input[name="paper"]');
+                            } else {
+                                form.remove('input[name="url"]');
                             }
                             form.submit();
                         }
