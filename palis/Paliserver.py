@@ -295,6 +295,7 @@ def withdraw_dispatch():
     status = request.form['status']
     if status == 'refuse':
         pde.forward_status = 0x1
+        pde.status = 0x1 # revert status to unread
     else:
         db.session.delete(PaperDispatchEntity.query.filter_by(_id=pde_id).first())
 
