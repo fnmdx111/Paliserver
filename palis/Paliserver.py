@@ -2,15 +2,14 @@
 
 from datetime import date
 import urllib2
-from flask import session, request, redirect, url_for, flash, jsonify, send_from_directory
+from flask import session, request, redirect, url_for, flash, jsonify, send_from_directory, safe_join
 from flask.ext.uploads import UploadNotAllowed, extension, os
 from flask.templating import render_template
 from sqlalchemy.exc import IntegrityError
-from palis import app, db, paper_uploader, PATH_ENCODING
+from palis import app, db, paper_uploader, PATH_ENCODING, const
 from palis.forms import LoginForm, ForwardForm, UploadForm, RegistrationForm, ResetPasswordForm
 from palis.misc import gen_filename, sorted_paper_by_date, sorted_user_by_name, sorted_dispatch_by_date, requires_roles
 from palis.models import User, PaperDispatchEntity, Paper
-
 
 @app.before_first_request
 def init_db(_=None):
@@ -281,7 +280,7 @@ def download_paper():
         # note that the encoding of the paths differs in windows and linux,
         # and everything retrieved from database are unicode,
         # and http doesn't care for unicode
-        return send_from_directory(os.path.join(app.instance_path, 'papers'),
+        return send_from_directory(const.paper_dir_path,
                                    Paper.query.filter_by(_id=paper_id).first().filename.encode(PATH_ENCODING),
                                    as_attachment=True)
 
@@ -312,7 +311,12 @@ def delete_paper():
     for pde in paper.dispatched_entities:
         db.session.delete(pde)
     db.session.delete(Paper.query.filter_by(_id=request.form['paper_id']).first())
-    # TODO add paper removing mechanism if needed
+
+    try:
+        os.remove(safe_join(const.paper_dir_path, paper.filename))
+    except OSError:
+        pass
+
     db.session.commit()
 
     return redirect(url_for('view_papers'))
