@@ -39,6 +39,10 @@ Dependencies
 Log
 ---
 
+*   2012/10/18T1642 - 0.0.h
+
+    added unread papers reminder mechanism
+
 *   2012/10/10T1952 - 0.0.g
 
     bug fixed

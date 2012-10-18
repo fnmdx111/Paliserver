@@ -7,6 +7,15 @@
     {% endif %}
 {%- endmacro %}
 
+{% block title -%}
+    {%- if unread_paper_count -%}
+        {{ unread_paper_count }} unread paper
+        {%- if unread_paper_count > 1 -%}
+            s
+        {%- endif -%}
+    {%- endif %} - {{ cur_username }}
+{%- endblock %}
+
 {% block body_content %}
     <div class="navbar navbar-inverse navbar-fixed-top">
         <div class="navbar-inner">
@@ -31,6 +40,9 @@
                         <li class="{{ make_active(show_list_active) }}">
                             <a href="{{ url_for('show_list') }}">
                                 <i class="icon-home icon-white"></i> Home
+                                {% if unread_paper_count -%}
+                                    <span class="label label-important">{{ unread_paper_count }}</span>
+                                {%- endif %}
                             </a>
                         </li>
                         <li class="{{ make_active(upload_paper_active) }}">
