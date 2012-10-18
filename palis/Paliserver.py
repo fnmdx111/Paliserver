@@ -28,10 +28,15 @@ def init_current_user(_=None):
         if user: # note that a user maybe deleted after he's logged in,
         # when this happens, username may still be in session,
         # but it's critical to test the user object's nullity
-            app.jinja_env.globals.update(cur_uid=user._id, cur_username=username)
+            app.jinja_env.globals.update(
+                cur_uid=user._id,
+                cur_username=username,
+                unread_paper_count=len(filter(lambda pde: pde.status == 0x1 and not pde.forward_status,
+                                              user.papers))
+            )
             return
 
-    app.jinja_env.globals.update(cur_uid=None, cur_username=None)
+    app.jinja_env.globals.update(cur_uid=None, cur_username=None, unread_paper_count=None)
 
 
 @app.route('/profile')
