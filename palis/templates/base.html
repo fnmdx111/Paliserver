@@ -12,8 +12,8 @@
         {{ unread_paper_count }} unread paper
         {%- if unread_paper_count > 1 -%}
             s
-        {%- endif -%}
-    {%- endif %} - {{ cur_username }}
+        {%- endif -%}&nbsp;-&nbsp;
+    {%- endif -%} {{- cur_username -}}
 {%- endblock %}
 
 {% block body_content %}
